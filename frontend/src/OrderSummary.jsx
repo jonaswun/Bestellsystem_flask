@@ -13,7 +13,18 @@ const OrderSummary = () => {
 
     // Increase selected quantity
     const increaseSelection = (id) => {
-        setSelectedItems(prev => ({ ...prev, [id]: prev[id] + 1 }));
+        setSelectedItems(prev => {
+            const currentItem = orderedItems.find(item => item.id === id);
+            if (currentItem) {
+                const currentQuantity = prev[id];
+                const maxQuantity = currentItem.quantity; // Max quantity of item
+
+                if (currentQuantity < maxQuantity) {
+                    return { ...prev, [id]: currentQuantity + 1 };
+                }
+            }
+            return prev;
+        });
     };
 
     // Decrease selected quantity
@@ -37,6 +48,24 @@ const OrderSummary = () => {
         return sum + (selectedItems[item.id] || 0) * item.price;
     }, 0);
 
+    // Handle "Abrechnen" (Checkout) by reducing the available quantities of the ordered items
+    const handleCheckout = () => {
+        setSelectedItems(prev => {
+            return orderedItems.reduce((acc, item) => {
+                const selectedQuantity = prev[item.id] || 0;
+                // Reduce the item quantity by the selected quantity
+                const remainingQuantity = item.quantity - selectedQuantity;
+                return {
+                    ...acc,
+                    [item.id]: 0, // Reset the selected quantity after checkout
+                    remainingQuantity: remainingQuantity < 0 ? 0 : remainingQuantity // Ensure no negative values
+                };
+            }, {});
+        });
+        // You can also navigate to another page after checkout, e.g., confirmation page
+        // navigate("/confirmation");
+    };
+
     return (
         <div>
             <h2>Zusammenfassung</h2>
@@ -55,6 +84,7 @@ const OrderSummary = () => {
 
             <h3>Gesamt: ${totalSelectedCost.toFixed(2)}</h3>
 
+            <button onClick={handleCheckout}>Abrechnen</button>
             <button onClick={() => navigate("/")}>Zurück</button>
         </div>
     );
