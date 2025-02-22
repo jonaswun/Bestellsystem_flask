@@ -1,0 +1,12 @@
+{
+  "food": [
+    {"id": 1, "name": "Pizza", "price": 10.99},
+    {"id": 2, "name": "Burger", "price": 7.99},
+    {"id": 3, "name": "Pasta", "price": 8.99}
+  ],
+  "drinks": [
+    {"id": 4, "name": "Cola", "price": 10.99},
+    {"id": 5, "name": "Fanta", "price": 7.99},
+    {"id": 6, "name": "Spezi", "price": 8.99}
+  ]
+}
