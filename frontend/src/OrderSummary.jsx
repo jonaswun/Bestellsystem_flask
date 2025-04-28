@@ -6,15 +6,18 @@ const OrderSummary = () => {
     const navigate = useNavigate();
     const { orderedItems = [] } = location.state || {};
 
+    const [items, setItems] = useState(orderedItems);
+
+
     // State to track selected items for payment
     const [selectedItems, setSelectedItems] = useState(
-        orderedItems.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
+        items.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
     );
 
     // Increase selected quantity
     const increaseSelection = (id) => {
         setSelectedItems(prev => {
-            const currentItem = orderedItems.find(item => item.id === id);
+            const currentItem = items.find(item => item.id === id);
             if (currentItem) {
                 const currentQuantity = prev[id];
                 const maxQuantity = currentItem.quantity; // Max quantity of item
@@ -37,40 +40,39 @@ const OrderSummary = () => {
 
     // Select all items
     const selectAll = () => {
-        setSelectedItems(orderedItems.reduce((acc, item) => ({
+        setSelectedItems(items.reduce((acc, item) => ({
             ...acc,
             [item.id]: item.quantity
         }), {}));
     };
 
     // Calculate total cost of selected items
-    const totalSelectedCost = orderedItems.reduce((sum, item) => {
+    const totalSelectedCost = items.reduce((sum, item) => {
         return sum + (selectedItems[item.id] || 0) * item.price;
     }, 0);
 
     // Handle "Abrechnen" (Checkout) by reducing the available quantities of the ordered items
     const handleCheckout = () => {
-        setSelectedItems(prev => {
-            return orderedItems.reduce((acc, item) => {
-                const selectedQuantity = prev[item.id] || 0;
-                // Reduce the item quantity by the selected quantity
-                const remainingQuantity = item.quantity - selectedQuantity;
-                return {
-                    ...acc,
-                    [item.id]: 0, // Reset the selected quantity after checkout
-                    remainingQuantity: remainingQuantity < 0 ? 0 : remainingQuantity // Ensure no negative values
-                };
-            }, {});
-        });
-        // You can also navigate to another page after checkout, e.g., confirmation page
-        // navigate("/confirmation");
-    };
+        setItems(prevItems => 
+          prevItems.map(item => {
+            const selectedQuantity = selectedItems[item.id] || 0;
+            return {
+              ...item,
+              quantity: item.quantity - selectedQuantity
+            };
+          })
+        );
 
+        // Reset selected items
+        setSelectedItems(prev => 
+          Object.keys(prev).reduce((acc, id) => ({ ...acc, [id]: 0 }), {})
+        );
+      };
     return (
         <div>
             <h2>Zusammenfassung</h2>
             <ul>
-                {orderedItems.map(item => (
+                {items.map(item => (
                     <li key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <button onClick={() => decreaseSelection(item.id)}>-</button>
                         <span>{selectedItems[item.id] || 0} / {item.quantity}</span>

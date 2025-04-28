@@ -43,18 +43,42 @@ function MenuPage() {
     };
 
     // Place order and navigate to summary
-    const placeOrder = () => {
-        const orderedItems = Object.entries(order)
-            .filter(([_, quantity]) => quantity > 0)
-            .map(([id, quantity]) => {
-                const item = findItemById(menu, id);
-                console.log(item)
-                return { id: item.id, name: item.name, quantity, price: item.price };
-            });
+const placeOrder = async () => {
+    const orderedItems = Object.entries(order)
+        .filter(([_, quantity]) => quantity > 0)
+        .map(([id, quantity]) => {
+            const item = findItemById(menu, id);
+            console.log(item);
+            return { id: item.id, name: item.name, quantity, price: item.price };
+        });
 
-        const totalCost = orderedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalCost = orderedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    // Send POST request to backend
+    try {
+        const response = await fetch('http://localhost:5000/order', {  // adjust URL if different
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderedItems, totalCost }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to place order');
+        }
+
+        const data = await response.json();
+        console.log('Order response:', data);
+
+        // After successful post, navigate to order summary
         navigate("/order-summary", { state: { orderedItems, totalCost } });
-    };
+
+    } catch (error) {
+        console.error('Error placing order:', error);
+        // You can add some UI feedback here if you want
+    }
+};
 
     
 
