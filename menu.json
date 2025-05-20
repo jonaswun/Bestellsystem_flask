@@ -4,10 +4,14 @@
     {"id": 2, "name": "Currywurst Pommes", "price": 5.00},
     {"id": 3, "name": "Steak mit Brot", "price": 6.00}
   ],
-  "drinks": [
+  "alkoholfrei": [
     {"id": 4, "name": "Bier", "price": 3.00},
     {"id": 5, "name": "Cola", "price": 3.00},
     {"id": 6, "name": "Fanta", "price": 3.00},
     {"id": 7, "name": "Spezi", "price": 3.50}
+  ],
+  "wein": [
+    {"id": 8, "name": "Weiswein", "price": 3.50},
+    {"id": 9, "name": "Rotwein", "price": 3.50}
   ]
 }

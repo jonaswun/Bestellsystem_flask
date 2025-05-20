@@ -77,7 +77,7 @@ const OrderSummary = () => {
                         <button onClick={() => decreaseSelection(item.id)}>-</button>
                         <span>{selectedItems[item.id] || 0} / {item.quantity}</span>
                         <button onClick={() => increaseSelection(item.id)}>+</button>
-                        <span>{item.name} - ${item.price.toFixed(2)}</span>
+                        <span>{item.name} - {item.price.toFixed(2)}€</span>
                     </li>
                 ))}
             </ul>
