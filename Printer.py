@@ -24,7 +24,7 @@ class Printer:
         self.printer_handle.image(image_path, impl='graphics', center=True)
 
     def print_items(self, items):
-        self.printer_handle.set(align='left', bold=False)
+        self.printer_handle.set(align='left', bold=False, double_height=False)
         self.printer_handle.textln("")
         total_order_price = 0
         for item in items:
@@ -34,14 +34,16 @@ class Printer:
             if item['quantity'] > 1:
                 self.printer_handle.textln("{:>10}x {:>7.2f}€".format(item['quantity'], item['price']))
 
-        self.printer_handle.set(align='left', bold=True, double_height=True)
-        self.printer_handle.textln(f'Gesamt: {total_order_price:<20}')
-        self.printer_handle.set(align='left', bold=False)
+        self.printer_handle.textln(f'Gesamt: {total_order_price:>20.2f}€')
 
-    def print_order(self, items):
+    def print_order(self, table_number:int, items, comment:str=None):
         if self.logo_path is not None:
             self.print_logo(self.logo_path)
+        self.printer_handle.textln(f'Tisch Nr. {table_number}')
+        self.printer_handle.textln()
         self.print_items(items)
+        if comment is not '':
+            self.printer_handle.textln(f'Kommentar:\n{comment}')
         self.printer_handle.cut()
 
     def __del__(self) -> None:

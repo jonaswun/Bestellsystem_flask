@@ -22,13 +22,10 @@ def get_menu():
 @app.route("/order", methods=["POST"])
 def place_order():
     data = request.json
-    printer.print_order(data['orderedItems'])
-
+    printer.print_order(data['tableNumber'], data['orderedItems'], comment=data['comment'])
     return jsonify({"message": "Order received!", "order": data})
 
 def main():
-    print("hallo")
-
     app.run(debug=False)
     
 if __name__ == "__main__":
