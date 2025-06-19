@@ -1,5 +1,5 @@
 import json
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 from Printer import Printer
 
@@ -17,7 +17,9 @@ with open("menu.json") as f:
 
 @app.route("/menu", methods=["GET"])
 def get_menu():
-    return jsonify(menu)
+    response = make_response(jsonify(menu))
+    response.headers["Content-Type"] = "application/json; charset=utf-8"
+    return response
 
 @app.route("/order", methods=["POST"])
 def place_order():
@@ -27,6 +29,6 @@ def place_order():
 
 def main():
     app.run(debug=False)
-    
+
 if __name__ == "__main__":
     main()
