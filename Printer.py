@@ -43,6 +43,7 @@ class Printer:
         self.printer_handle.textln()
         self.print_items(items)
         if comment != '':
+            self.printer_handle.textln()
             self.printer_handle.textln(f'Kommentar:\n{comment}')
         self.printer_handle.cut()
 
