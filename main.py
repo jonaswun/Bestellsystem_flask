@@ -11,7 +11,7 @@ printer = None
 printer = Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
 
 # Load menu from JSON file
-with open("menu.json") as f:
+with open("menu.json", encoding="utf-8") as f:
     menu = json.load(f)
     print(menu)
 
