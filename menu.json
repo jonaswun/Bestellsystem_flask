@@ -1,17 +1,48 @@
 {
-  "food": [
-    {"id": 1, "name": "Pommes", "price": 3.50},
-    {"id": 2, "name": "Currywurst Pommes", "price": 5.00},
-    {"id": 3, "name": "Steak mit Brot", "price": 6.00}
+  "Bier": [
+    {"id": 1, "name": "Pils", "price": 3.50},
+    {"id": 2, "name": "Radler", "price": 3.50},
+    {"id": 3, "name": "Weizen", "price": 3.50},
+    {"id": 4, "name": "Alkoholfreies Weizen", "price": 3.50},
+    {"id": 5, "name": " Bierträger", "price": 18.00}
   ],
-  "alkoholfrei": [
-    {"id": 4, "name": "Bier", "price": 3.00},
-    {"id": 5, "name": "Cola", "price": 3.00},
-    {"id": 6, "name": "Fanta", "price": 3.00},
-    {"id": 7, "name": "Spezi", "price": 3.50}
+  "Wein": [
+    {"id": 6, "name": "Weißwein", "price":3.50 },
+    {"id": 7, "name": "Rotwein", "price":3.50 },
+    {"id": 8, "name": "Schorle", "price": 3.00},
+    {"id": 9, "name": "Sekt", "price": 2.50},
+    {"id": 10, "name": "Schorle Bausatz", "price": 18.00}
   ],
-  "wein": [
-    {"id": 8, "name": "Weiswein", "price": 3.50},
-    {"id": 9, "name": "Rotwein", "price": 3.50}
+  "Alkoholfreies": [
+    {"id": 11, "name": "Coca-Cola", "price": 3.00},
+    {"id": 12, "name": "Spezi", "price": 3.00},
+    {"id": 13, "name": "Fanta", "price": 3.00},
+    {"id": 14, "name": "Ebner Apfelschorle ", "price": 3.00},
+    {"id": 15, "name": "Ebner Johannisbeerschorle", "price": 3.00},
+    {"id": 16, "name": "Ebner Eistee Pfirsich", "price": 3.00},
+    {"id": 17, "name": "Mineralwasser", "price": 3.00}
+  ],
+  "Essen": [
+    {"id": 18, "name": "Schweinekeule (ohne Knochen) mit Brot", "price": 8.00},
+    {"id": 19, "name": "Schweinekeule (ohne Knochen) mit Pommes", "price":  10.50},
+    {"id": 20, "name": "Wurstsalat mit Brot", "price":  6.50},
+    {"id": 21, "name": "Wurstsalat mit Pommes", "price":  9.00},
+    {"id": 22, "name": "Grillwurst mit Brot", "price":  3.50},
+    {"id": 23, "name": "Grillwurst mit Pommes", "price":  6.00},
+    {"id": 24, "name": "Currywurst mit Brot", "price":  4.50},
+    {"id": 25, "name": "Currywurst mit Pommes", "price":  7.00},
+    {"id": 26, "name": "Pommes", "price": 3.50}
+  ],
+  "Kaffee/Kuchen": [
+    {"id": 27, "name": "Kaffee", "price": 2.50},
+    {"id": 28, "name": "div. Kuchen/Torten", "price": 2.50}
   ]
 }
+
+
+
+
+
+
+
+
