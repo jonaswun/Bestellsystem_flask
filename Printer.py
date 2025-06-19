@@ -42,7 +42,7 @@ class Printer:
         self.printer_handle.textln(f'Tisch Nr. {table_number}')
         self.printer_handle.textln()
         self.print_items(items)
-        if comment is not '':
+        if comment != '':
             self.printer_handle.textln(f'Kommentar:\n{comment}')
         self.printer_handle.cut()
 
