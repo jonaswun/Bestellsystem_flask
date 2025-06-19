@@ -24,7 +24,7 @@ function MenuPage() {
 
     // Fetch menu from backend
     useEffect(() => {
-        axios.get("http://localhost:5000/menu")
+        axios.get("http://192.168.0.26:5000/menu")
             .then(response => setMenu(response.data))
             .catch(error => console.error("Error fetching menu:", error));
     }, []);
@@ -66,7 +66,7 @@ function MenuPage() {
         }
 
         try {
-            const response = await fetch("http://localhost:5000/order", {
+            const response = await fetch("http://192.168.0.26:5000/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderedItems, totalCost, comment, tableNumber }),
@@ -88,7 +88,7 @@ function MenuPage() {
 
     return (
         <div>
-            <img src="/Logos_Rucksackberger_klein.jpg" alt="Banner" className="banner" />
+            {/* <img src="/Logos_Rucksackberger_klein.jpg" alt="Banner" className="banner" /> */}
             <h1>Menü</h1>
 
             <div className="category-buttons">
@@ -108,8 +108,6 @@ function MenuPage() {
             <div>
                 {menu[selectedCategory].map(item => (
                     <div key={item.id} className="menu-item">
-
-
                         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                             <button onClick={() => decreaseQuantity(item.id)}>-</button>
                             <span>{order[item.id] || 0}</span>
@@ -124,7 +122,7 @@ function MenuPage() {
                 <label htmlFor="comment">Kommentar zur Bestellung:</label><br />
                 <textarea
                     id="comment"
-                    rows="4"
+                    rows="2"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Optionaler Kommentar, z.B. Sonderwünsche..."
