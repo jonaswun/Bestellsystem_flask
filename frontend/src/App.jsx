@@ -22,9 +22,11 @@ function MenuPage() {
     const [comment, setComment] = useState("");
     const [tableNumber, setTableNumber] = useState("");
 
+    const BASE_URL = import.meta.env.VITE_API_URL;
+
     // Fetch menu from backend
     useEffect(() => {
-        axios.get("http://192.168.0.26:5000/menu")
+        axios.get('http://'+BASE_URL+':5000/menu')
             .then(response => setMenu(response.data))
             .catch(error => console.error("Error fetching menu:", error));
     }, []);
@@ -66,7 +68,7 @@ function MenuPage() {
         }
 
         try {
-            const response = await fetch("http://192.168.0.26:5000/order", {
+            const response = await fetch('http://'+BASE_URL+':5000/order', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderedItems, totalCost, comment, tableNumber }),
