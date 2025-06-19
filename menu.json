@@ -4,7 +4,7 @@
     {"id": 2, "name": "Radler", "price": 3.50},
     {"id": 3, "name": "Weizen", "price": 3.50},
     {"id": 4, "name": "Alkoholfreies Weizen", "price": 3.50},
-    {"id": 5, "name": " Bierträger", "price": 18.00}
+    {"id": 5, "name": "Bierträger", "price": 18.00}
   ],
   "Wein": [
     {"id": 6, "name": "Weißwein", "price":3.50 },
@@ -13,7 +13,7 @@
     {"id": 9, "name": "Sekt", "price": 2.50},
     {"id": 10, "name": "Schorle Bausatz", "price": 18.00}
   ],
-  "Alkoholfreies": [
+  "Alkoholfreie Getränke": [
     {"id": 11, "name": "Coca-Cola", "price": 3.00},
     {"id": 12, "name": "Spezi", "price": 3.00},
     {"id": 13, "name": "Fanta", "price": 3.00},
