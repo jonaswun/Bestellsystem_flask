@@ -1,41 +1,41 @@
 {
   "Bier": [
-    {"id": 1, "name": "Pils", "price": 3.50},
-    {"id": 2, "name": "Radler", "price": 3.50},
-    {"id": 3, "name": "Weizen", "price": 3.50},
-    {"id": 4, "name": "Alkoholfreies Weizen", "price": 3.50},
-    {"id": 5, "name": "Bierträger", "price": 18.00}
+    {"id": 1, "name": "Pils", "price": 3.50, "type": "drink"},
+    {"id": 2, "name": "Radler", "price": 3.50, "type": "drink"},
+    {"id": 3, "name": "Weizen", "price": 3.50, "type": "drink"},
+    {"id": 4, "name": "Alkoholfreies Weizen", "price": 3.50, "type": "drink"},
+    {"id": 5, "name": "Bierträger", "price": 18.00, "type": "drink"}
   ],
   "Wein": [
-    {"id": 6, "name": "Weißwein", "price":3.50 },
-    {"id": 7, "name": "Rotwein", "price":3.50 },
-    {"id": 8, "name": "Schorle", "price": 3.00},
-    {"id": 9, "name": "Sekt", "price": 2.50},
-    {"id": 10, "name": "Schorle Bausatz", "price": 18.00}
+    {"id": 6, "name": "Weißwein", "price":3.50, "type": "drink" },
+    {"id": 7, "name": "Rotwein", "price":3.50, "type": "drink" },
+    {"id": 8, "name": "Schorle", "price": 3.00, "type": "drink"},
+    {"id": 9, "name": "Sekt", "price": 2.50, "type": "drink"},
+    {"id": 10, "name": "Schorle Bausatz", "price": 18.00, "type": "drink"}
   ],
   "Alkoholfreie Getränke": [
-    {"id": 11, "name": "Coca-Cola", "price": 3.00},
-    {"id": 12, "name": "Spezi", "price": 3.00},
-    {"id": 13, "name": "Fanta", "price": 3.00},
-    {"id": 14, "name": "Ebner Apfelschorle ", "price": 3.00},
-    {"id": 15, "name": "Ebner Johannisbeerschorle", "price": 3.00},
-    {"id": 16, "name": "Ebner Eistee Pfirsich", "price": 3.00},
-    {"id": 17, "name": "Mineralwasser", "price": 3.00}
+    {"id": 11, "name": "Coca-Cola", "price": 3.00, "type": "drink"},
+    {"id": 12, "name": "Spezi", "price": 3.00, "type": "drink"},
+    {"id": 13, "name": "Fanta", "price": 3.00, "type": "drink"},
+    {"id": 14, "name": "Ebner Apfelschorle ", "price": 3.00, "type": "drink"},
+    {"id": 15, "name": "Ebner Johannisbeerschorle", "price": 3.00, "type": "drink"},
+    {"id": 16, "name": "Ebner Eistee Pfirsich", "price": 3.00, "type": "drink"},
+    {"id": 17, "name": "Mineralwasser", "price": 3.00, "type": "drink"}
   ],
   "Essen": [
-    {"id": 18, "name": "Schweinekeule (ohne Knochen) mit Brot", "price": 8.00},
-    {"id": 19, "name": "Schweinekeule (ohne Knochen) mit Pommes", "price":  10.50},
-    {"id": 20, "name": "Wurstsalat mit Brot", "price":  6.50},
-    {"id": 21, "name": "Wurstsalat mit Pommes", "price":  9.00},
-    {"id": 22, "name": "Grillwurst mit Brot", "price":  3.50},
-    {"id": 23, "name": "Grillwurst mit Pommes", "price":  6.00},
-    {"id": 24, "name": "Currywurst mit Brot", "price":  4.50},
-    {"id": 25, "name": "Currywurst mit Pommes", "price":  7.00},
+    {"id": 18, "name": "Schweinekeule (ohne Knochen) mit Brot", "price": 8.00, "type": "food"},
+    {"id": 19, "name": "Schweinekeule (ohne Knochen) mit Pommes", "price":  10.50, "type": "food"},
+    {"id": 20, "name": "Wurstsalat mit Brot", "price":  6.50, "type": "food"},
+    {"id": 21, "name": "Wurstsalat mit Pommes", "price":  9.00, "type": "food"},
+    {"id": 22, "name": "Grillwurst mit Brot", "price":  3.50, "type": "food"},
+    {"id": 23, "name": "Grillwurst mit Pommes", "price":  6.00, "type": "food"},
+    {"id": 24, "name": "Currywurst mit Brot", "price":  4.50, "type": "food"},
+    {"id": 25, "name": "Currywurst mit Pommes", "price":  7.00, "type": "food"},
     {"id": 26, "name": "Pommes", "price": 3.50}
   ],
   "Kaffee/Kuchen": [
-    {"id": 27, "name": "Kaffee", "price": 2.50},
-    {"id": 28, "name": "div. Kuchen/Torten", "price": 2.50}
+    {"id": 27, "name": "Kaffee", "price": 2.50, "type": "drink"},
+    {"id": 28, "name": "div. Kuchen/Torten", "price": 2.50, "type": "drink"}
   ]
 }
 

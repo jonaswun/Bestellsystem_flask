@@ -37,15 +37,20 @@ class Printer:
         self.printer_handle.textln(f'Gesamt: {total_order_price:>20.2f}€')
 
     def print_order(self, table_number:int, items, comment:str=None):
-        if self.logo_path is not None:
-            self.print_logo(self.logo_path)
-        self.printer_handle.textln(f'Tisch Nr. {table_number}')
-        self.printer_handle.textln()
-        self.print_items(items)
-        if comment != '':
+        if items == []:
+            return
+        else:
+            # print(f'Nr: {table_number} \t Items: {items}')
+            return
+            if self.logo_path is not None:
+                self.print_logo(self.logo_path)
+            self.printer_handle.textln(f'Tisch Nr. {table_number}')
             self.printer_handle.textln()
-            self.printer_handle.textln(f'Kommentar:\n{comment}')
-        self.printer_handle.cut()
+            self.print_items(items)
+            if comment != '':
+                self.printer_handle.textln()
+                self.printer_handle.textln(f'Kommentar:\n{comment}')
+            self.printer_handle.cut()
 
     def __del__(self) -> None:
         pass

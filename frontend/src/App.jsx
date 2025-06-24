@@ -51,7 +51,7 @@ function MenuPage() {
             .filter(([_, quantity]) => quantity > 0)
             .map(([id, quantity]) => {
                 const item = findItemById(menu, id);
-                return { id: item.id, name: item.name, quantity, price: item.price };
+                return { id: item.id, name: item.name, quantity, price: item.price, type: item.type};
             });
 
         const totalCost = orderedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
