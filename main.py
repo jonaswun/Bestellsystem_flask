@@ -22,11 +22,11 @@ if MOCK_PRINTER:
     printer_food = MockPrinter()
     printer_drinks = MockPrinter()
 else:
-    printer_food = Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
-    printer_drinks = printer_food # Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
+    printer_food = Printer("192.168.0.24", logo_path='resources/Rucksackberger_solo.png')
+    printer_drinks = printer_food # Printer("192.168.0.24", logo_path='resources/Rucksackberger_solo.png')
 
 # Load menu from JSON file
-with open("menu.json", encoding="utf-8") as f:
+with open("resources/menu.json", encoding="utf-8") as f:
     menu = json.load(f)
     print(menu)
 
