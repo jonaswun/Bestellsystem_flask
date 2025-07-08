@@ -4,15 +4,25 @@ import csv
 from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 from Printer import Printer
+from MockPrinter import MockPrinter
 from datetime import datetime
+from queue import Queue
+from threading import Thread
 
 app = Flask(__name__)
 CORS(app)
 
 printer = None
 
-printer_food = Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
-printer_drinks = printer_food # Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
+# Add a mockup switch for the printer
+MOCK_PRINTER = True
+
+if MOCK_PRINTER:
+    printer_food = MockPrinter()
+    printer_drinks = MockPrinter()
+else:
+    printer_food = Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
+    printer_drinks = printer_food # Printer("192.168.0.24", logo_path='Rucksackberger_solo.png')
 
 # Load menu from JSON file
 with open("menu.json", encoding="utf-8") as f:
@@ -33,6 +43,35 @@ def save_order(filename, data, user_type):
 
         timestamp = datetime.now().isoformat()
 
+# Create a queue for orders
+order_queue = Queue()
+
+def process_orders():
+    while True:
+        # Peek at the first item without removing it
+        if order_queue.empty():
+            continue
+        order = order_queue.queue[0]  # Access the first item
+
+    
+        if not printer_food.is_available() or not printer_drinks.is_available():
+            print("Printer is not available, skipping order processing.")
+            continue
+        else:
+            # Process the order
+            items_food = [item for item in order['orderedItems'] if item['type'] == 'food']
+            items_drinks = [item for item in order['orderedItems'] if item['type'] == 'drink']
+            printer_food.print_order(order['tableNumber'], items_food, comment=order['comment'])
+            printer_drinks.print_order(order['tableNumber'], items_drinks, comment=order['comment'])
+
+            # Remove the item from the queue after successful processing
+            order_queue.get()
+            order_queue.task_done()
+
+# Start a background thread to process orders
+order_thread = Thread(target=process_orders, daemon=True)
+order_thread.start()
+
 @app.route("/menu", methods=["GET"])
 def get_menu():
     response = make_response(jsonify(menu))
@@ -45,14 +84,12 @@ def place_order():
     user_agent = request.headers.get("User-Agent")
 
     save_order('data.csv', data, user_agent)
-    return jsonify({"message": "Order received!", "order": data})
     print(data)
     print(user_agent)
-    # filter for food and drinks
-    items_food = [item for item in data['orderedItems'] if item['type'] == 'food']
-    items_drinks = [item for item in data['orderedItems'] if item['type'] == 'drink']
-    printer_food.print_order(data['tableNumber'], items_food, comment=data['comment'])
-    printer_drinks.print_order(data['tableNumber'], items_drinks, comment=data['comment'])
+
+    # Add the order to the queue
+    order_queue.put(data)
+
     return jsonify({"message": "Order received!", "order": data})
 
 def main():

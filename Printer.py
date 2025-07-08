@@ -12,6 +12,21 @@ class Printer:
         assert self.printer_handle.is_online()
         self.logo_path = logo_path
 
+
+    def is_available(self) -> bool:
+        """
+        Check if the printer is available and can accept print jobs.
+        Returns True if printer is online and reachable.
+        """
+        try:
+            # Try to create a test connection
+            test_printer = Network(self.printer_handle.host, self.printer_handle.port, timeout=5)
+            test_printer.open()
+            test_printer.close()
+            return True
+        except:
+            return False
+    
     def print_logo(self, image_path:str) -> None:
         """
         Prints the given logo
