@@ -1,10 +1,9 @@
 """
 Printer management service for handling multiple printers.
 """
-from Printer import Printer
-from MockPrinter import MockPrinter
+from services.Printer import Printer
+from services.MockPrinter import MockPrinter
 from config import Config
-
 
 class PrinterService:
     """Service for managing food and drink printers"""

@@ -4,7 +4,7 @@ Order processing service for handling order business logic.
 from datetime import datetime
 from queue import Queue
 from threading import Thread
-from order_logger import OrderLogger
+from services.order_logger import OrderLogger
 from services.printer_service import PrinterService
 from utils.file_utils import save_order_csv
 from config import Config

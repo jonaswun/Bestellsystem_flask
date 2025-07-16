@@ -2,7 +2,7 @@ import pytest
 import json
 import os
 from unittest.mock import patch, MagicMock
-from main import app, order_queue
+from flask_app.main import app, order_queue
 
 
 @pytest.fixture

@@ -7,7 +7,6 @@ import csv
 from datetime import datetime
 from config import Config
 
-
 def load_menu():
     """Load menu from JSON file"""
     try:

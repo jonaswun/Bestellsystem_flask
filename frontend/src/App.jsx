@@ -90,7 +90,7 @@ function MenuPage() {
 
     return (
         <div>
-            {/* <img src="/Logos_Rucksackberger_klein.jpg" alt="Banner" className="banner" /> */}
+            {<img src="/Logos_Rucksackberger_klein.jpg" alt="Banner" className="banner" />}
             <h1>Menü</h1>
 
             <div className="category-buttons">
