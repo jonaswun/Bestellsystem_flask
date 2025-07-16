@@ -13,10 +13,10 @@ class Config:
     # Printer settings
     MOCK_PRINTER = True
     PRINTER_IP = "192.168.0.24"
-    LOGO_PATH = '../resources/Rucksackberger_solo.png'
+    LOGO_PATH = "resources/Rucksackberger_solo.png"
     
     # File paths
-    MENU_PATH = "../resources/menu.json"
+    MENU_PATH = "resources/menu.json"
     DATABASE_PATH = "orders.db"
     CSV_FALLBACK_PATH = "data.csv"
     

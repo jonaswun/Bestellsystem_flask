@@ -1,4 +1,12 @@
 """Python Implementation for the Printer Setup"""
+# Patch for missing DeviceNotFoundError
+from escpos.exceptions import Error
+
+class DeviceNotFoundError(Error):
+    pass
+
+import escpos.exceptions
+escpos.exceptions.DeviceNotFoundError = DeviceNotFoundError
 
 from escpos.printer import Network
 
