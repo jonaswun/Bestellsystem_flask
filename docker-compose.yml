@@ -1,12 +1,14 @@
 services:
   backend:
     build: ./flask_app
-    expose:
-      - "5000"
+    ports:                # Changed from expose to ports
+      - "5000:5000"      # Correct port mapping syntax
     volumes:
       - flask_db_data:/flask_app/data
     environment:
       - FLASK_ENV=production
+    networks:            # Add network configuration
+      - app_network
 
   frontend:
     build: ./frontend
@@ -14,6 +16,12 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:           # Add network configuration
+      - app_network
+
+networks:              # Define the network
+  app_network:
+    driver: bridge
 
 volumes:
   flask_db_data:
