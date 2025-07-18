@@ -17,7 +17,7 @@ class Config:
     
     # File paths
     MENU_PATH = "resources/menu.json"
-    DATABASE_PATH = "orders.db"
+    DATABASE_PATH = "data/orders.db"
     CSV_FALLBACK_PATH = "data.csv"
     
     # Order processing settings
