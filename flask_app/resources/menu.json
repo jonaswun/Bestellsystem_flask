@@ -23,19 +23,19 @@
     {"id": 17, "name": "Mineralwasser", "price": 3.00, "type": "drink"}
   ],
   "Essen": [
-    {"id": 18, "name": "Schweinekeule (ohne Knochen) mit Brot", "price": 8.00, "type": "food"},
-    {"id": 19, "name": "Schweinekeule (ohne Knochen) mit Pommes", "price":  10.50, "type": "food"},
-    {"id": 20, "name": "Wurstsalat mit Brot", "price":  6.50, "type": "food"},
-    {"id": 21, "name": "Wurstsalat mit Pommes", "price":  9.00, "type": "food"},
-    {"id": 22, "name": "Grillwurst mit Brot", "price":  3.50, "type": "food"},
-    {"id": 23, "name": "Grillwurst mit Pommes", "price":  6.00, "type": "food"},
-    {"id": 24, "name": "Currywurst mit Brot", "price":  4.50, "type": "food"},
-    {"id": 25, "name": "Currywurst mit Pommes", "price":  7.00, "type": "food"},
+    {"id": 18, "name": "Schweinekeule Brot", "price": 8.00, "type": "food"},
+    {"id": 19, "name": "Schweinekeule Pommes", "price":  10.50, "type": "food"},
+    {"id": 20, "name": "Wurstsalat Brot", "price":  6.50, "type": "food"},
+    {"id": 21, "name": "Wurstsalat Pommes", "price":  9.00, "type": "food"},
+    {"id": 22, "name": "Grillwurst Brot", "price":  3.50, "type": "food"},
+    {"id": 23, "name": "Grillwurst Pommes", "price":  6.00, "type": "food"},
+    {"id": 24, "name": "Currywurst Brot", "price":  4.50, "type": "food"},
+    {"id": 25, "name": "Currywurst Pommes", "price":  7.00, "type": "food"},
     {"id": 26, "name": "Pommes", "price": 3.50}
   ],
   "Kaffee/Kuchen": [
     {"id": 27, "name": "Kaffee", "price": 2.50, "type": "drink"},
-    {"id": 28, "name": "div. Kuchen/Torten", "price": 2.50, "type": "drink"}
+    {"id": 28, "name": "Kuchen/Torten", "price": 2.50, "type": "drink"}
   ]
 }
 
