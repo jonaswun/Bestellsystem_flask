@@ -26,7 +26,7 @@ function MenuPage() {
 
     // Fetch menu from backend
     useEffect(() => {
-        axios.get('http://'+BASE_URL+':5000/menu')
+        axios.get('/api/menu')
             .then(response => setMenu(response.data))
             .catch(error => console.error("Error fetching menu:", error));
     }, []);
@@ -68,7 +68,7 @@ function MenuPage() {
         }
 
         try {
-            const response = await fetch('http://'+BASE_URL+':5000/order', {
+            const response = await fetch('/api/order', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderedItems, totalCost, comment, tableNumber }),
