@@ -44,19 +44,30 @@ const OrderSummary = () => {
     }, 0);
 
     const handleCheckout = () => {
-        setItems(prevItems => 
-            prevItems.map(item => {
-                const selectedQuantity = selectedItems[item.id] || 0;
-                return {
-                    ...item,
-                    quantity: item.quantity - selectedQuantity
-                };
-            })
+        // Update items first
+        const updatedItems = items.map(item => {
+            const selectedQuantity = selectedItems[item.id] || 0;
+            return {
+                ...item,
+                quantity: item.quantity - selectedQuantity
+            };
+        });
+
+        // Set the updated items
+        setItems(updatedItems);
+
+        // Reset selected items
+        setSelectedItems(
+            Object.keys(selectedItems).reduce((acc, id) => ({ ...acc, [id]: 0 }), {})
         );
 
-        setSelectedItems(prev => 
-            Object.keys(prev).reduce((acc, id) => ({ ...acc, [id]: 0 }), {})
-        );
+        // Check if all quantities are zero
+        const allZero = updatedItems.every(item => item.quantity === 0);
+        
+        // Navigate to main page if all quantities are zero
+        if (allZero) {
+            navigate('/');
+        }
     };
 
     return (
