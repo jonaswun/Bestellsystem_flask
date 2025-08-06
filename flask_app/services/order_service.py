@@ -63,23 +63,55 @@ class OrderService:
                     self.order_queue.get()
                     self.order_queue.task_done()
     
-    def process_order(self, order_data, user_agent):
-        """Process a new order - save to database and add to print queue"""
+    def process_order(self, data, user_agent=None, user_info=None):
+        """
+        Process a new order with user information
+        
+        Args:
+            data (dict): Order data
+            user_agent (str): User agent string
+            user_info (dict): User information including user_id, username, role
+            
+        Returns:
+            int: Order ID
+        """
+        # Log order to database with user information
+        order_id = self.order_logger.save_order(data, user_agent, user_info)
+        
+        # Add order to processing queue with user info
+        order_data = {
+            'order_id': order_id,
+            'tableNumber': data.get('tableNumber'),
+            'orderedItems': data.get('orderedItems', []),
+            'comment': data.get('comment', ''),
+            'user_info': user_info
+        }
+        
+        # Add to queue for background processing
+        self.order_queue.put(order_data)
+        
+        # Save as CSV fallback
         try:
-            # Save order to database
-            order_id = self.order_logger.save_order(order_data, user_agent)
-            print(f"Order saved to database with ID: {order_id}")
-            
-            # Add to print queue
-            self.order_queue.put(order_data)
-            
-            return order_id
+            save_order_csv(data, Config.CSV_FALLBACK_PATH, user_info)
         except Exception as e:
-            print(f"Error saving order: {e}")
-            # Fallback to CSV if SQLite fails
-            return save_order_csv(Config.CSV_FALLBACK_PATH, order_data, user_agent)
+            print(f"Failed to save CSV fallback: {e}")
+        
+        return order_id
     
-    def get_orders(self, table_number=None, limit=None):
+    def get_orders_by_user(self, user_id, limit=50):
+        """
+        Get orders for a specific user
+        
+        Args:
+            user_id (int): User ID
+            limit (int): Maximum number of orders to return
+            
+        Returns:
+            list: List of orders for the user
+        """
+        return self.order_logger.get_orders_by_user(user_id, limit)
+    
+    def get_orders(self, table_number=None, limit=50):
         """Get orders with optional filtering"""
         if limit is None:
             limit = Config.DEFAULT_ORDER_LIMIT
@@ -117,3 +149,11 @@ class OrderService:
             'pending_orders': self.order_queue.qsize(),
             'printer_status': self.printer_service.get_printer_status()
         }
+    
+    def get_user_activity_stats(self):
+        """Get user activity analytics"""
+        return self.order_logger.get_user_activity_stats()
+    
+    def get_user_order_stats(self, user_id):
+        """Get order statistics for a specific user"""
+        return self.order_logger.get_user_order_stats(user_id)

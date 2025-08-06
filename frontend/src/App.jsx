@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./AuthContext";
+import LoginForm from "./LoginForm";
+import UserProfile from "./UserProfile";
 import OrderSummary from "./OrderSummary";
 
 function findItemById(menu, id) {
@@ -21,12 +24,14 @@ function MenuPage() {
     const navigate = useNavigate();
     const [comment, setComment] = useState("");
     const [tableNumber, setTableNumber] = useState("");
+    const [showProfile, setShowProfile] = useState(false);
+    const { user, logout } = useAuth();
 
     const BASE_URL = import.meta.env.VITE_API_URL;
 
     // Fetch menu from backend
     useEffect(() => {
-        axios.get('/api/menu')
+        axios.get('/api/menu', { withCredentials: true })
             .then(response => setMenu(response.data))
             .catch(error => console.error("Error fetching menu:", error));
     }, []);
@@ -70,18 +75,25 @@ function MenuPage() {
         try {
             const response = await fetch('/api/order', {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include', // Include cookies for session
                 body: JSON.stringify({ orderedItems, totalCost, comment, tableNumber }),
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    alert("Sie müssen sich anmelden, um eine Bestellung aufzugeben.");
+                    return;
+                }
                 throw new Error("Failed to place order");
             }
 
             const data = await response.json();
             console.log("Order response:", data);
 
-            navigate("/order-summary", { state: { orderedItems, totalCost, comment, tableNumber } });
+            navigate("/order-summary", { state: { orderedItems, totalCost, comment, tableNumber, user } });
         } catch (error) {
             console.error("Error placing order:", error);
             alert("Fehler beim Senden der Bestellung.");
@@ -91,7 +103,20 @@ function MenuPage() {
     return (
         <div>
             {<img src="/Logos_Rucksackberger_klein.jpg" alt="Banner" className="banner" />}
-            <h1>Menü</h1>
+            
+            {/* User Header */}
+            <div className="user-header">
+                <h1>Menü</h1>
+                <div className="user-info">
+                    <span>Welcome, {user.username}</span>
+                    <button 
+                        className="profile-btn"
+                        onClick={() => setShowProfile(true)}
+                    >
+                        👤
+                    </button>
+                </div>
+            </div>
 
             <div className="category-buttons">
                 {Object.keys(menu).map((category) => (
@@ -146,11 +171,31 @@ function MenuPage() {
             <div>
                 <button onClick={placeOrder}>Bestellen</button>
             </div>
+            
+            {/* Profile Modal */}
+            {showProfile && (
+                <UserProfile onClose={() => setShowProfile(false)} />
+            )}
         </div>
     );
 }
 
-function App() {
+// Main App component with authentication wrapper
+function AppContent() {
+    const { isAuthenticated, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div className="loading-container">
+                <div className="loading-spinner">Loading...</div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <LoginForm onLoginSuccess={() => {}} />;
+    }
+
     return (
         <Router>
             <Routes>
@@ -158,6 +203,14 @@ function App() {
                 <Route path="/order-summary" element={<OrderSummary />} />
             </Routes>
         </Router>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }
 

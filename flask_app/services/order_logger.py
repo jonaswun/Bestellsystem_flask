@@ -25,7 +25,11 @@ class OrderLogger:
                     comment TEXT,
                     total_price REAL,
                     status TEXT DEFAULT 'pending',
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    user_id INTEGER,
+                    username TEXT,
+                    user_role TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
                 )
             ''')
             
@@ -54,6 +58,11 @@ class OrderLogger:
                 ON orders (table_number)
             ''')
             
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_orders_user_id 
+                ON orders (user_id)
+            ''')
+
             conn.commit()
     
     @contextmanager
@@ -66,13 +75,14 @@ class OrderLogger:
         finally:
             conn.close()
     
-    def save_order(self, data, user_agent=None):
+    def save_order(self, data, user_agent=None, user_info=None):
         """
         Save an order to the database
         
         Args:
             data (dict): Order data containing tableNumber, orderedItems, comment
             user_agent (str): User agent string from request headers
+            user_info (dict): User information including user_id, username, role
         
         Returns:
             int: The ID of the created order
@@ -85,19 +95,27 @@ class OrderLogger:
             for item in data.get('orderedItems', [])
         )
         
+        # Extract user information
+        user_id = user_info.get('user_id') if user_info else None
+        username = user_info.get('username') if user_info else None
+        user_role = user_info.get('role') if user_info else None
+        
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
             # Insert order
             cursor.execute('''
-                INSERT INTO orders (timestamp, table_number, user_agent, comment, total_price)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO orders (timestamp, table_number, user_agent, comment, total_price, user_id, username, user_role)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 timestamp,
                 data.get('tableNumber'),
                 user_agent,
                 data.get('comment', ''),
-                total_price
+                total_price,
+                user_id,
+                username,
+                user_role
             ))
             
             order_id = cursor.lastrowid
@@ -150,6 +168,23 @@ class OrderLogger:
                 ORDER BY created_at DESC 
                 LIMIT ?
             ''', (table_number, limit))
+            
+            return [dict(row) for row in cursor.fetchall()]
+    
+    def get_orders_by_user(self, user_id, limit=50):
+        """Get orders for a specific user"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT o.*, 
+                       COUNT(oi.id) as item_count
+                FROM orders o
+                LEFT JOIN order_items oi ON o.id = oi.order_id
+                WHERE o.user_id = ?
+                GROUP BY o.id
+                ORDER BY o.created_at DESC 
+                LIMIT ?
+            ''', (user_id, limit))
             
             return [dict(row) for row in cursor.fetchall()]
     
@@ -293,3 +328,100 @@ class OrderLogger:
             
             conn.commit()
             return cursor.rowcount
+    
+    def get_user_activity_stats(self):
+        """Get user activity statistics"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Get orders per user
+            cursor.execute('''
+                SELECT 
+                    username,
+                    user_role,
+                    COUNT(*) as total_orders,
+                    SUM(total_price) as total_spent,
+                    AVG(total_price) as avg_order_value,
+                    MAX(created_at) as last_order_date
+                FROM orders 
+                WHERE user_id IS NOT NULL
+                GROUP BY user_id, username, user_role
+                ORDER BY total_orders DESC
+            ''')
+            
+            user_stats = [dict(row) for row in cursor.fetchall()]
+            
+            # Get overall stats
+            cursor.execute('''
+                SELECT 
+                    COUNT(DISTINCT user_id) as total_users,
+                    COUNT(*) as total_orders,
+                    SUM(total_price) as total_revenue
+                FROM orders 
+                WHERE user_id IS NOT NULL
+            ''')
+            
+            overall_stats = dict(cursor.fetchone())
+            
+            return {
+                'user_stats': user_stats,
+                'overall_stats': overall_stats
+            }
+    
+    def get_user_order_stats(self, user_id):
+        """Get order statistics for a specific user"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Get user's order summary
+            cursor.execute('''
+                SELECT 
+                    COUNT(*) as total_orders,
+                    SUM(total_price) as total_spent,
+                    AVG(total_price) as avg_order_value,
+                    MIN(created_at) as first_order,
+                    MAX(created_at) as last_order
+                FROM orders 
+                WHERE user_id = ?
+            ''', (user_id,))
+            
+            stats = dict(cursor.fetchone())
+            
+            # Get favorite items
+            cursor.execute('''
+                SELECT 
+                    oi.item_name,
+                    SUM(oi.quantity) as total_ordered,
+                    SUM(oi.price * oi.quantity) as total_spent_on_item
+                FROM order_items oi
+                JOIN orders o ON oi.order_id = o.id
+                WHERE o.user_id = ?
+                GROUP BY oi.item_name
+                ORDER BY total_ordered DESC
+                LIMIT 5
+            ''', (user_id,))
+            
+            favorite_items = [dict(row) for row in cursor.fetchall()]
+            
+            # Get recent orders
+            cursor.execute('''
+                SELECT 
+                    id,
+                    timestamp,
+                    table_number,
+                    total_price,
+                    status,
+                    comment
+                FROM orders 
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT 10
+            ''', (user_id,))
+            
+            recent_orders = [dict(row) for row in cursor.fetchall()]
+            
+            return {
+                'summary': stats,
+                'favorite_items': favorite_items,
+                'recent_orders': recent_orders
+            }
