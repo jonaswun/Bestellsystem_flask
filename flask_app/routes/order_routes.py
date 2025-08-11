@@ -1,9 +1,9 @@
 """
 Order-related routes for the ordering system.
 """
+import datetime
 from flask import Blueprint, jsonify, request
 from services.order_service import OrderService
-import datetime#
 
 order_bp = Blueprint('order', __name__)
 order_service = OrderService()
@@ -15,7 +15,7 @@ def place_order():
     #save timestamp in unix time
     data['timestamp'] = int(datetime.datetime.now().timestamp())
     user_agent = request.headers.get("User-Agent")
-    
+
     try:
         result = order_service.process_order(data, user_agent)
         return jsonify({"message": "Order received!", "order": data, "order_id": result})
@@ -27,13 +27,13 @@ def get_orders():
     """Get recent orders with optional filtering"""
     table_number = request.args.get('table', type=int)
     limit = request.args.get('limit', default=50, type=int)
-    
+
     try:
         orders = order_service.get_orders(table_number, limit)
         return jsonify({"orders": orders})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 @order_bp.route("/orders/dashboard/food", methods=["GET"])
 def get_dashboard_orders():
     """Get orders for the dashboard"""
@@ -44,7 +44,7 @@ def get_dashboard_orders():
         return jsonify({"orders": orders})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 @order_bp.route("/orders/dashboard/complete", methods=["PUT"])
 def complete_dashboard_orders():
     """Complete a dashboard order"""
@@ -96,10 +96,10 @@ def update_order_status(order_id):
     """Update the status of an order"""
     data = request.json or {}
     status = data.get('status')
-    
+
     if not status:
         return jsonify({"error": "Status is required"}), 400
-    
+
     try:
         success = order_service.update_order_status(order_id, status)
         if success:
@@ -114,7 +114,7 @@ def export_orders():
     """Export orders to CSV"""
     date_from = request.args.get('from')
     date_to = request.args.get('to')
-    
+
     try:
         filename = order_service.export_orders(date_from, date_to)
         return jsonify({"message": f"Orders exported to {filename}"})
