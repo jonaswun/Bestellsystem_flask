@@ -10,12 +10,12 @@ function Dashboard() {
         try {
             const response = await axios.get('/api/orders/dashboard/food');
             console.log('API Response:', response.data); // Debug log
-            
+
             // Ensure orders exist and filter out completed ones
-            const validOrders = response.data.orders?.filter(order => 
+            const validOrders = response.data.orders?.filter(order =>
                 order && order.status !== 'completed'
             ) || [];
-            
+
             setOrders(validOrders);
         } catch (err) {
             setError('Failed to fetch orders');
