@@ -29,7 +29,7 @@ def save_order_csv(filename, data, user_type):
         write_header = not os.path.exists(filename)
         with open(filename, mode='a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            
+
             if write_header:
                 headers = ['timestamp', 'table_number', 'user_agent', 'items', 'comment']
                 writer.writerow(headers)

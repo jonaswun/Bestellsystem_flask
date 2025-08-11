@@ -12,7 +12,7 @@ from config import Config
 
 class OrderService:
     """Service for managing order processing and data operations"""
-    
+
     def __init__(self):
         """Initialize order service"""
         self.order_logger = OrderLogger(Config.DATABASE_PATH)
@@ -20,12 +20,12 @@ class OrderService:
         self.printer_order_queue = Queue()
         self.dashboard_order_queue = Queue()
         self._start_order_processing_thread()
-    
+
     def _start_order_processing_thread(self):
         """Start background thread for processing orders"""
         self.order_thread = Thread(target=self._process_orders, daemon=True)
         self.order_thread.start()
-    
+
     def _process_orders(self):
         """Background process for handling order queue"""
         while True:
@@ -33,30 +33,31 @@ class OrderService:
                 # Check if queue is empty
                 if self.printer_order_queue.empty():
                     continue
-                
+
                 # Peek at the first order without removing it
                 order = self.printer_order_queue.queue[0]
-                
+
                 # Check if printers are available
                 if not self.printer_service.are_printers_available():
                     print("Printers not available, skipping order processing.")
                     continue
-                
+
                 # Process the order
                 success = self.printer_service.print_order(
-                    order['tableNumber'], 
-                    order['orderedItems'], 
+                    order['tableNumber'],
+                    order['orderedItems'],
                     comment=order.get('comment', '')
                 )
-                
+
                 if success:
                     # Remove the order from queue after successful processing
                     self.printer_order_queue.get()
                     self.printer_order_queue.task_done()
-                    print(f"Order for table {order['tableNumber']} processed successfully")
+                    print(
+                        f"Order for table {order['tableNumber']} processed successfully")
                 else:
                     print("Failed to print order, will retry...")
-                    
+
             except Exception as e:
                 print(f"Error processing order: {e}")
                 # Remove problematic order to prevent infinite loop
@@ -119,7 +120,7 @@ class OrderService:
                 item.get('type') == filter['value']
                 for item in order.get('orderedItems', [])
             )
-            
+
             if has_matching_item:
                 filtered_orders.append(order)
 
@@ -137,7 +138,7 @@ class OrderService:
     def update_order_status(self, order_id, status):
         """Update the status of an order"""
         return self.order_logger.update_order_status(order_id, status)
-    
+
     def get_sales_summary(self, date_from=None, date_to=None):
         """Get sales analytics"""
         ret = self.order_logger.get_sales_summary(date_from, date_to)
@@ -147,13 +148,13 @@ class OrderService:
     def get_popular_items(self, limit=10):
         """Get most popular menu items"""
         return self.order_logger.get_popular_items(limit)
-    
+
     def export_orders(self, date_from=None, date_to=None):
         """Export orders to CSV"""
         filename = f"orders_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         self.order_logger.export_to_csv(filename, date_from, date_to)
         return filename
-    
+
     def get_queue_status(self):
         """Get current order queue status"""
         return {

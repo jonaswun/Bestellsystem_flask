@@ -7,12 +7,12 @@ from config import Config
 
 class PrinterService:
     """Service for managing food and drink printers"""
-    
+
     def __init__(self):
         """Initialize printer service with configuration"""
         self.config = Config.get_printer_config()
         self._initialize_printers()
-    
+
     def _initialize_printers(self):
         """Initialize the printers based on configuration"""
         if self.config['mock']:
@@ -25,31 +25,31 @@ class PrinterService:
             )
             # Using same printer for both food and drinks for now
             self.printer_drinks = self.printer_food
-    
+
     def are_printers_available(self):
         """Check if both printers are available"""
-        return (self.printer_food.is_available() and 
+        return (self.printer_food.is_available() and
                 self.printer_drinks.is_available())
-    
+
     def print_order(self, table_number, items, comment=""):
         """Print order to appropriate printers based on item types"""
         try:
             # Separate items by type
             items_food = [item for item in items if item.get('type') == 'food']
             items_drinks = [item for item in items if item.get('type') == 'drink']
-            
+
             # Print to appropriate printers
             if items_food:
                 self.printer_food.print_order(table_number, items_food, comment=comment)
-            
+
             if items_drinks:
                 self.printer_drinks.print_order(table_number, items_drinks, comment=comment)
-                
+
             return True
         except Exception as e:
             print(f"Error printing order: {e}")
             return False
-    
+
     def get_printer_status(self):
         """Get status of both printers"""
         return {
