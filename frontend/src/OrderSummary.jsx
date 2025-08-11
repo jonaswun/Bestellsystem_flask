@@ -75,16 +75,18 @@ const OrderSummary = () => {
             <h2>Zusammenfassung</h2>
             <div>
                 <ul style={{ padding: 0, listStyle: "none" }}>
-                    {items.map(item => (
-                        <li key={item.id} className="menu-item">
-                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                <button onClick={() => decreaseSelection(item.id)}>-</button>
-                                <span>{selectedItems[item.id] || 0} / {item.quantity}</span>
-                                <button onClick={() => increaseSelection(item.id)}>+</button>
-                                <span>{item.name} - {item.price.toFixed(2)}€</span>
-                            </div>
-                        </li>
-                    ))}
+                    {items
+                        .filter(item => item.quantity > 0)  // Filter items with quantity > 0
+                        .map(item => (
+                            <li key={item.id} className="menu-item">
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                    <button onClick={() => decreaseSelection(item.id)}>-</button>
+                                    <span>{selectedItems[item.id] || 0} / {item.quantity}</span>
+                                    <button onClick={() => increaseSelection(item.id)}>+</button>
+                                    <span>{item.name} - {item.price.toFixed(2)}€</span>
+                                </div>
+                            </li>
+                        ))}
                 </ul>
             </div>
 
