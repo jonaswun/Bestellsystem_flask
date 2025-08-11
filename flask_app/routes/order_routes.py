@@ -3,6 +3,7 @@ Order-related routes for the ordering system.
 """
 from flask import Blueprint, jsonify, request
 from services.order_service import OrderService
+import datetime#
 
 order_bp = Blueprint('order', __name__)
 order_service = OrderService()
@@ -11,6 +12,8 @@ order_service = OrderService()
 def place_order():
     """Place a new order"""
     data = request.json
+    #save timestamp in unix time
+    data['timestamp'] = int(datetime.datetime.now().timestamp())
     user_agent = request.headers.get("User-Agent")
     
     try:
@@ -30,6 +33,51 @@ def get_orders():
         return jsonify({"orders": orders})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@order_bp.route("/orders/dashboard/food", methods=["GET"])
+def get_dashboard_orders():
+    """Get orders for the dashboard"""
+    try:
+        print("Fetching dashboard orders...", flush=True)
+        filter = {"key": "type", "value": "food"}
+        orders = order_service.get_dashboard_orders(filter)
+        return jsonify({"orders": orders})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@order_bp.route("/orders/dashboard/complete", methods=["PUT"])
+def complete_dashboard_orders():
+    """Complete a dashboard order"""
+    try:
+        # Validate request body exists
+        if not request.is_json:
+            return jsonify({"error": "Request must be JSON"}), 400
+
+        # Get and validate order_timestamp
+        data = request.json
+        order_timestamp = data.get("timestamp")
+        if order_timestamp is None:
+            return jsonify({"error": "Order timestamp is required"}), 400
+
+        # Log the order completion attempt
+        print(f"Attempting to complete order {order_timestamp}", flush=True)
+
+        # Remove order from queue
+        order_service.remove_order_from_queue(order_timestamp)
+
+        # Return success response
+        return jsonify({
+            "success": True,
+            "message": f"Order {order_timestamp} completed successfully",
+            "order_id": order_timestamp
+        })
+
+    except Exception as e:
+        print(f"Error completing order: {str(e)}", flush=True)
+        return jsonify({
+            "success": False,
+            "error": f"Failed to complete order: {str(e)}"
+        }), 500
 
 @order_bp.route("/orders/<int:order_id>", methods=["GET"])
 def get_order_details(order_id):

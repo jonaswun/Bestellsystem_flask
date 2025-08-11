@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import OrderSummary from "./OrderSummary";
+import Dashboard from "./components/Dashboard";  // Add this import
 
 function findItemById(menu, id) {
     for (const category of Object.keys(menu)) { // Iterate over "food" and "drinks"
@@ -156,6 +157,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<MenuPage />} />
                 <Route path="/order-summary" element={<OrderSummary />} />
+                <Route path="/dashboard" element={<Dashboard />} />  {/* Add this route */}
             </Routes>
         </Router>
     );
