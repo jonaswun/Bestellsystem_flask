@@ -140,8 +140,10 @@ class OrderService:
     
     def get_sales_summary(self, date_from=None, date_to=None):
         """Get sales analytics"""
-        return self.order_logger.get_sales_summary(date_from, date_to)
-    
+        ret = self.order_logger.get_sales_summary(date_from, date_to)
+        print(ret)
+        return ret
+
     def get_popular_items(self, limit=10):
         """Get most popular menu items"""
         return self.order_logger.get_popular_items(limit)

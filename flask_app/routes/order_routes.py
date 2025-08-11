@@ -120,3 +120,13 @@ def export_orders():
         return jsonify({"message": f"Orders exported to {filename}"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@order_bp.route("/orders/summary", methods=["GET"])
+def get_sales_summary():
+    """Get summary of sales data"""
+    try:
+        summary = order_service.get_sales_summary()
+        return jsonify(summary)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
