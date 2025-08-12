@@ -101,7 +101,9 @@ function MenuPage() {
                         key={category}
                         onClick={() => setSelectedCategory(category)}
                         style={{
-                            fontWeight: selectedCategory === category ? "bold" : "normal"
+                            fontWeight: selectedCategory === category ? "bold" : "normal",
+                            backgroundColor: selectedCategory === category ? "#062c55ff" : "#2157a5",
+                            color: selectedCategory === category ? "white" : "white"
                         }}
                     >
                         {category.charAt(0).toUpperCase() + category.slice(1)}
