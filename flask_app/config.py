@@ -11,8 +11,9 @@ class Config:
     PORT = 5000
     
     # Printer settings
-    MOCK_PRINTER = True
-    PRINTER_IP = "192.168.0.24"
+    MOCK_PRINTER = False
+    DRINKS_PRINTER_IP = "192.168.0.99"
+    FOOD_PRINTER_IP = "192.168.0.24"
     LOGO_PATH = "resources/Rucksackberger_solo.png"
     
     # File paths
@@ -29,6 +30,7 @@ class Config:
         """Get printer configuration"""
         return {
             'mock': cls.MOCK_PRINTER,
-            'ip': cls.PRINTER_IP,
+            'ip_drinks': cls.DRINKS_PRINTER_IP,
+            'ip_food': cls.FOOD_PRINTER_IP,
             'logo_path': cls.LOGO_PATH
         }

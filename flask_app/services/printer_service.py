@@ -20,11 +20,13 @@ class PrinterService:
             self.printer_drinks = MockPrinter()
         else:
             self.printer_food = Printer(
-                self.config['ip'], 
+                self.config['ip_food'],
                 logo_path=self.config['logo_path']
             )
-            # Using same printer for both food and drinks for now
-            self.printer_drinks = self.printer_food
+            self.printer_drinks = Printer(
+                self.config['ip_drinks'],
+                logo_path=self.config['logo_path']
+            )
 
     def are_printers_available(self):
         """Check if both printers are available"""
