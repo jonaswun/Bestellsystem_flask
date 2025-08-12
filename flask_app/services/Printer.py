@@ -63,8 +63,6 @@ class Printer:
         if items == []:
             return
         else:
-            print(f'Nr: {table_number} \t Items: {items}')
-            return
             if self.logo_path is not None:
                 self.print_logo(self.logo_path)
             self.printer_handle.textln(f'Tisch Nr. {table_number}')
