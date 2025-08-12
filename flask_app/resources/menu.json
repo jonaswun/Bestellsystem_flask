@@ -1,41 +1,47 @@
 {
   "Bier": [
     {"id": 1, "name": "Pils", "price": 3.50, "type": "drink"},
-    {"id": 2, "name": "Radler", "price": 3.50, "type": "drink"},
-    {"id": 3, "name": "Weizen", "price": 3.50, "type": "drink"},
-    {"id": 4, "name": "Alkoholfreies Weizen", "price": 3.50, "type": "drink"},
-    {"id": 5, "name": "Bierträger", "price": 18.00, "type": "drink"}
+    {"id": 2, "name": "Radler sauer", "price": 3.50, "type": "drink"},
+    {"id": 3, "name": "Radler süß", "price": 3.50, "type": "drink"},
+    {"id": 4, "name": "Weizen", "price": 3.50, "type": "drink"},
+    {"id": 5, "name": "Russ", "price": 3.50, "type": "drink"},
+    {"id": 6, "name": "Colaweizen", "price": 3.50, "type": "drink"},
+    {"id": 7, "name": "Alkoholfreies Weizen", "price": 3.50, "type": "drink"},
+    {"id": 8, "name": "Bierträger", "price": 18.00, "type": "drink"}
   ],
   "Wein": [
-    {"id": 6, "name": "Weißwein", "price":3.50, "type": "drink" },
-    {"id": 7, "name": "Rotwein", "price":3.50, "type": "drink" },
-    {"id": 8, "name": "Schorle", "price": 3.00, "type": "drink"},
-    {"id": 9, "name": "Sekt", "price": 2.50, "type": "drink"},
-    {"id": 10, "name": "Schorle Bausatz", "price": 18.00, "type": "drink"}
+    {"id": 20, "name": "Weißwein", "price":3.50, "type": "drink" },
+    {"id": 21, "name": "Rotwein", "price":3.50, "type": "drink" },
+    {"id": 22, "name": "Schorle Weiß süß", "price": 3.00, "type": "drink"},
+    {"id": 23, "name": "Schorle Weiß sauer", "price": 3.00, "type": "drink"},
+    {"id": 24, "name": "Schorle Rot süß", "price": 3.00, "type": "drink"},
+    {"id": 25, "name": "Schorle Rot sauer", "price": 3.00, "type": "drink"},
+    {"id": 26, "name": "Sekt", "price": 2.50, "type": "drink"},
+    {"id": 27, "name": "Schorle Bausatz", "price": 18.00, "type": "drink"}
   ],
   "Alkoholfreie Getränke": [
-    {"id": 11, "name": "Coca-Cola", "price": 3.00, "type": "drink"},
-    {"id": 12, "name": "Spezi", "price": 3.00, "type": "drink"},
-    {"id": 13, "name": "Fanta", "price": 3.00, "type": "drink"},
-    {"id": 14, "name": "Apfelschorle ", "price": 3.00, "type": "drink"},
-    {"id": 15, "name": "Johannisbeerschorle", "price": 3.00, "type": "drink"},
-    {"id": 16, "name": "Eistee Pfirsich", "price": 3.00, "type": "drink"},
-    {"id": 17, "name": "Mineralwasser", "price": 3.00, "type": "drink"}
+    {"id": 40, "name": "Coca-Cola", "price": 3.00, "type": "drink"},
+    {"id": 41, "name": "Spezi", "price": 3.00, "type": "drink"},
+    {"id": 42, "name": "Fanta", "price": 3.00, "type": "drink"},
+    {"id": 43, "name": "Apfelschorle ", "price": 3.00, "type": "drink"},
+    {"id": 44, "name": "Johannisbeerschorle", "price": 3.00, "type": "drink"},
+    {"id": 45, "name": "Eistee Pfirsich", "price": 3.00, "type": "drink"},
+    {"id": 46, "name": "Mineralwasser", "price": 3.00, "type": "drink"}
   ],
   "Essen": [
-    {"id": 18, "name": "Keule Brot", "price": 8.00, "type": "food"},
-    {"id": 19, "name": "Keule Pommes", "price":  10.50, "type": "food"},
-    {"id": 20, "name": "Wurstsalat Brot", "price":  6.50, "type": "food"},
-    {"id": 21, "name": "Wurstsalat Pommes", "price":  9.00, "type": "food"},
-    {"id": 22, "name": "Wurst Brot", "price":  3.50, "type": "food"},
-    {"id": 23, "name": "Wurst Pommes", "price":  6.00, "type": "food"},
-    {"id": 24, "name": "Curry Brot", "price":  4.50, "type": "food"},
-    {"id": 25, "name": "Curry Pommes", "price":  7.00, "type": "food"},
-    {"id": 26, "name": "Pommes", "price": 3.50}
+    {"id": 60, "name": "Keule Brot", "price": 8.00, "type": "food"},
+    {"id": 61, "name": "Keule Pommes", "price":  10.50, "type": "food"},
+    {"id": 62, "name": "Wurstsalat Brot", "price":  6.50, "type": "food"},
+    {"id": 63, "name": "Wurstsalat Pommes", "price":  9.00, "type": "food"},
+    {"id": 64, "name": "Wurst Brot", "price":  3.50, "type": "food"},
+    {"id": 65, "name": "Wurst Pommes", "price":  6.00, "type": "food"},
+    {"id": 66, "name": "Curry Brot", "price":  4.50, "type": "food"},
+    {"id": 67, "name": "Curry Pommes", "price":  7.00, "type": "food"},
+    {"id": 68, "name": "Pommes", "price": 3.50}
   ],
   "Kaffee/Kuchen": [
-    {"id": 27, "name": "Kaffee", "price": 2.50, "type": "drink"},
-    {"id": 28, "name": "Kuchen/Torten", "price": 2.50, "type": "drink"}
+    {"id": 90, "name": "Kaffee", "price": 2.50, "type": "drink"},
+    {"id": 91, "name": "Kuchen/Torten", "price": 2.50, "type": "drink"}
   ]
 }
 
