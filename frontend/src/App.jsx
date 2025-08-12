@@ -139,9 +139,15 @@ function MenuPage() {
                     id="tableNumber"
                     type="number"
                     value={tableNumber}
-                    onChange={(e) => setTableNumber(e.target.value)}
+                    onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value <= 999) {
+                            setTableNumber(e.target.value);
+                        }
+                    }}
                     placeholder="z.B. 5"
                     min="1"
+                    max="999"
                 />
             </div>
 
