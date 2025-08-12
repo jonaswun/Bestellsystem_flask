@@ -58,11 +58,13 @@ function Dashboard() {
                     <div key={index} className="order-card">
                         <h2>Tisch Nr: {order.tableNumber}</h2>
                         <div className="order-items">
-                            {order.orderedItems.map((item, idx) => (
-                                <div key={idx} className="order-item">
-                                    <span>{item.quantity}x {item.name}</span>
-                                </div>
-                            ))}
+                            {order.orderedItems
+                                .filter(item => item.type === 'food')
+                                .map((item, idx) => (
+                                    <div key={idx} className="order-item">
+                                        <span>{item.quantity}x {item.name}</span>
+                                    </div>
+                                ))}
                         </div>
                         {order.comment && (
                             <div className="order-comment">
