@@ -30,19 +30,14 @@ class OrderService:
         """Background process for handling order queue"""
         while True:
             try:
-                # Check if queue is empty
-                if self.printer_order_queue.empty():
-                    continue
+                # Wait until an order is available
+                order = self.printer_order_queue.get(block=True)
 
-                # Peek at the first order without removing it
-                order = self.printer_order_queue.queue[0]
-
-                # Check if printers are available
                 if not self.printer_service.are_printers_available():
-                    print("Printers not available, skipping order processing.")
+                    print("Printers not available, re-queuing order.", flush=True)
+                    self.printer_order_queue.put(order)
                     continue
-
-                # Process the order
+                
                 success = self.printer_service.print_order(
                     order['tableNumber'],
                     order['orderedItems'],
@@ -50,20 +45,13 @@ class OrderService:
                 )
 
                 if success:
-                    # Remove the order from queue after successful processing
-                    self.printer_order_queue.get()
                     self.printer_order_queue.task_done()
-                    print(
-                        f"Order for table {order['tableNumber']} processed successfully")
                 else:
-                    print("Failed to print order, will retry...")
+                    print("Failed to print order, will retry...", Flush=True)
+                    self.printer_order_queue.put(order)
 
             except Exception as e:
                 print(f"Error processing order: {e}")
-                # Remove problematic order to prevent infinite loop
-                if not self.printer_order_queue.empty():
-                    self.printer_order_queue.get()
-                    self.printer_order_queue.task_done()
 
     def process_order(self, order_data, user_agent):
         """Process a new order - save to database and add to print queue"""
