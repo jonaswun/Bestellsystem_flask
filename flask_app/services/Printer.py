@@ -17,7 +17,7 @@ class Printer:
 
     def __init__(self, ip_address:str, logo_path:str=None) -> None:
         self.printer_handle = Network(ip_address, profile='TM-T20II')
-        assert self.printer_handle.is_online()
+        # assert self.printer_handle.is_online()
         self.logo_path = logo_path
 
 
@@ -63,7 +63,7 @@ class Printer:
         if items == []:
             return
         else:
-            # print(f'Nr: {table_number} \t Items: {items}')
+            print(f'Nr: {table_number} \t Items: {items}')
             return
             if self.logo_path is not None:
                 self.print_logo(self.logo_path)
