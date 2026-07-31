@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import OrderSummary from "./OrderSummary";
 import Dashboard from "./components/Dashboard";
 import Summary from "./components/Summary";
@@ -17,19 +17,27 @@ function findItemById(menu, id) {
 }
 
 function MenuPage() {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const restoredState = location.state || {};
     const [menu, setMenu] = useState({ Bier: [], drinks: [] });
     const [selectedCategory, setSelectedCategory] = useState("Bier");
-    const [order, setOrder] = useState({});
-    const navigate = useNavigate();
-    const [comment, setComment] = useState("");
-    const [tableNumber, setTableNumber] = useState("");
-
-    const BASE_URL = import.meta.env.VITE_API_URL;
+    const [order, setOrder] = useState(restoredState.orderState || {});
+    const [comment, setComment] = useState(restoredState.comment || "");
+    const [tableNumber, setTableNumber] = useState(restoredState.tableNumber || "");
 
     // Fetch menu from backend
     useEffect(() => {
         axios.get('/api/menu')
-            .then(response => setMenu(response.data))
+            .then(response => {
+                setMenu(response.data);
+                // Ensure default selected category is valid
+                const categories = Object.keys(response.data);
+                if (categories.length > 0 && !categories.includes(selectedCategory)) {
+                    setSelectedCategory(categories[0]);
+                }
+            })
             .catch(error => console.error("Error fetching menu:", error));
     }, []);
 
@@ -47,14 +55,15 @@ function MenuPage() {
         });
     };
 
-    // Place order and navigate to summary
-    const placeOrder = async () => {
+    // Navigate to order summary with draft state (no HTTP POST yet)
+    const goToSummary = () => {
         const orderedItems = Object.entries(order)
             .filter(([_, quantity]) => quantity > 0)
             .map(([id, quantity]) => {
                 const item = findItemById(menu, id);
-                return { id: item.id, name: item.name, quantity, price: item.price, type: item.type};
-            });
+                return item ? { id: item.id, name: item.name, quantity, price: item.price, type: item.type } : null;
+            })
+            .filter(Boolean);
 
         const totalCost = orderedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -69,30 +78,20 @@ function MenuPage() {
             return;
         }
 
-        try {
-            const response = await fetch('/api/order', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ orderedItems, totalCost, comment, tableNumber }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to place order");
+        // Navigate to summary without printing/saving yet
+        navigate("/order-summary", {
+            state: {
+                orderedItems,
+                totalCost,
+                comment,
+                tableNumber,
+                orderState: order
             }
-
-            const data = await response.json();
-            console.log("Order response:", data);
-
-            navigate("/order-summary", { state: { orderedItems, totalCost, comment, tableNumber } });
-        } catch (error) {
-            console.error("Error placing order:", error);
-            alert("Fehler beim Senden der Bestellung.");
-        }
+        });
     };
 
     return (
         <div>
-            {/* {<img src="/Logos_Rucksackberger_klein.jpg" alt="Banner" className="banner" />} */}
             <h1>Menü</h1>
 
             <div className="category-buttons">
@@ -103,7 +102,7 @@ function MenuPage() {
                         style={{
                             fontWeight: selectedCategory === category ? "bold" : "normal",
                             backgroundColor: selectedCategory === category ? "#062c55ff" : "#2157a5",
-                            color: selectedCategory === category ? "white" : "white"
+                            color: "white"
                         }}
                     >
                         {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -112,19 +111,19 @@ function MenuPage() {
             </div>
 
             <div>
-                {menu[selectedCategory].map(item => (
+                {(menu[selectedCategory] || []).map(item => (
                     <div key={item.id} className="menu-item">
                         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                             <button onClick={() => decreaseQuantity(item.id)}>-</button>
                             <span>{order[item.id] || 0}</span>
                             <button onClick={() => increaseQuantity(item.id)}>+</button>
-                             <span>{item.name} - {item.price.toFixed(2)}€</span>
+                            <span>{item.name} - {item.price.toFixed(2)}€</span>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div>
+            <div style={{ marginTop: "15px" }}>
                 <label htmlFor="comment">Kommentar zur Bestellung:</label><br />
                 <textarea
                     id="comment"
@@ -135,7 +134,7 @@ function MenuPage() {
                 />
             </div>
 
-            <div>
+            <div style={{ marginTop: "15px" }}>
                 <label htmlFor="tableNumber">Tischnummer:</label><br />
                 <input
                     id="tableNumber"
@@ -143,7 +142,7 @@ function MenuPage() {
                     value={tableNumber}
                     onChange={(e) => {
                         const value = parseInt(e.target.value);
-                        if (value <= 999) {
+                        if (isNaN(value) || value <= 999) {
                             setTableNumber(e.target.value);
                         }
                     }}
@@ -153,12 +152,27 @@ function MenuPage() {
                 />
             </div>
 
-            <div>
-                <button onClick={placeOrder}>Bestellen</button>
+            <div style={{ marginTop: "20px" }}>
+                <button
+                    onClick={goToSummary}
+                    style={{
+                        padding: "12px 24px",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        backgroundColor: "#2e7d32",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                    }}
+                >
+                    Zur Abrechnung / Vorschau ➔
+                </button>
             </div>
         </div>
     );
 }
+
 
 function App() {
     return (
