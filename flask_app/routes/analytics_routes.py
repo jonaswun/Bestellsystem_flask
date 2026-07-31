@@ -1,11 +1,10 @@
 """
 Analytics-related routes for the ordering system.
 """
-from flask import Blueprint, jsonify, request
-from services.order_service import OrderService
+from flask import Blueprint, jsonify, request, current_app
 
 analytics_bp = Blueprint('analytics', __name__)
-order_service = OrderService()
+
 
 @analytics_bp.route("/analytics/sales", methods=["GET"])
 def get_sales_summary():
@@ -14,7 +13,7 @@ def get_sales_summary():
     date_to = request.args.get('to')
 
     try:
-        summary = order_service.get_sales_summary(date_from, date_to)
+        summary = current_app.order_service.get_sales_summary(date_from, date_to)
         return jsonify(summary)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -25,7 +24,7 @@ def get_popular_items():
     limit = request.args.get('limit', default=10, type=int)
 
     try:
-        items = order_service.get_popular_items(limit)
+        items = current_app.order_service.get_popular_items(limit)
         return jsonify({"popular_items": items})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

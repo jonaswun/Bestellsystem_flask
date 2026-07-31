@@ -1,6 +1,7 @@
 """
 Order processing service for handling order business logic.
 """
+import datetime
 from datetime import datetime
 from queue import Queue
 from threading import Thread
@@ -8,6 +9,8 @@ from services.order_logger import OrderLogger
 from services.printer_service import PrinterService
 from utils.file_utils import save_order_csv
 from config import Config
+import logging
+import time
 
 
 class OrderService:
@@ -15,6 +18,9 @@ class OrderService:
 
     def __init__(self):
         """Initialize order service"""
+        self.log = logging.getLogger(__name__)
+        self.log.info("Initializing order service")
+
         self.order_logger = OrderLogger(Config.DATABASE_PATH)
         self.printer_service = PrinterService()
         self.printer_order_queue = Queue()
@@ -34,40 +40,45 @@ class OrderService:
                 order = self.printer_order_queue.get(block=True)
 
                 if not self.printer_service.are_printers_available():
-                    print("Printers not available, re-queuing order.", flush=True)
+                    self.log.warning("Printer is not available, please check the printer. Re-queuing order. Timeout for 10 seconds")
                     self.printer_order_queue.put(order)
+                    time.sleep(10)
                     continue
                 
                 success = self.printer_service.print_order(
                     order['tableNumber'],
                     order['orderedItems'],
-                    comment=order.get('comment', '')
+                    comment=order.get('comment', ''),
+                    timestamp=order.get('timestamp', None)
                 )
 
                 if success:
                     self.printer_order_queue.task_done()
                 else:
-                    print("Failed to print order, will retry...", Flush=True)
+                    self.log.warning("Failed to print order, will retry...")
                     self.printer_order_queue.put(order)
 
             except Exception as e:
-                print(f"Error processing order: {e}")
+                self.log.error(f"Error processing order: {e}")
+                self.printer_order_queue.put(order)
 
     def process_order(self, order_data, user_agent):
         """Process a new order - save to database and add to print queue"""
         try:
+
+            self.log.info(f"Processing order: {order_data}")    
             # Save order to database
             order_id = self.order_logger.save_order(order_data, user_agent)
-            print(f"Order saved to database with ID: {order_id}")
+            self.log.info(f"Order saved to database with ID: {order_id}")
 
             # Add to print queue
             self.printer_order_queue.put(order_data)
             self.dashboard_order_queue.put(order_data)
-            print(f"Order added to print queue: {order_data}", flush=True)
+            self.log.info(f"Order added to print queue for table {order_data['tableNumber']}")
 
             return order_id
         except Exception as e:
-            print(f"Error saving order: {e}")
+            self.log.error(f"Error saving order: {e}")
             # Fallback to CSV if SQLite fails
             return save_order_csv(Config.CSV_FALLBACK_PATH, order_data, user_agent)
 

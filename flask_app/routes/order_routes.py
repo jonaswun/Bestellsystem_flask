@@ -2,11 +2,10 @@
 Order-related routes for the ordering system.
 """
 import datetime
-from flask import Blueprint, jsonify, request
-from services.order_service import OrderService
+from flask import Blueprint, jsonify, request, current_app
 
 order_bp = Blueprint('order', __name__)
-order_service = OrderService()
+
 
 @order_bp.route("/order", methods=["POST"])
 def place_order():
@@ -17,7 +16,7 @@ def place_order():
     user_agent = request.headers.get("User-Agent")
 
     try:
-        result = order_service.process_order(data, user_agent)
+        result = current_app.order_service.process_order(data, user_agent)
         return jsonify({"message": "Order received!", "order": data, "order_id": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -29,7 +28,7 @@ def get_orders():
     limit = request.args.get('limit', default=50, type=int)
 
     try:
-        orders = order_service.get_orders(table_number, limit)
+        orders = current_app.order_service.get_orders(table_number, limit)
         return jsonify({"orders": orders})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -40,7 +39,7 @@ def get_dashboard_orders():
     try:
         print("Fetching dashboard orders...", flush=True)
         filter = {"key": "type", "value": "food"}
-        orders = order_service.get_dashboard_orders(filter)
+        orders = current_app.order_service.get_dashboard_orders(filter)
         return jsonify({"orders": orders})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -63,7 +62,7 @@ def complete_dashboard_orders():
         print(f"Attempting to complete order {order_timestamp}", flush=True)
 
         # Remove order from queue
-        order_service.remove_order_from_queue(order_timestamp)
+        current_app.order_service.remove_order_from_queue(order_timestamp)
 
         # Return success response
         return jsonify({
@@ -83,7 +82,7 @@ def complete_dashboard_orders():
 def get_order_details(order_id):
     """Get detailed information about a specific order"""
     try:
-        order = order_service.get_order_details(order_id)
+        order = current_app.order_service.get_order_details(order_id)
         if order:
             return jsonify(order)
         else:
@@ -101,7 +100,7 @@ def update_order_status(order_id):
         return jsonify({"error": "Status is required"}), 400
 
     try:
-        success = order_service.update_order_status(order_id, status)
+        success = current_app.order_service.update_order_status(order_id, status)
         if success:
             return jsonify({"message": "Status updated successfully"})
         else:
@@ -116,17 +115,16 @@ def export_orders():
     date_to = request.args.get('to')
 
     try:
-        filename = order_service.export_orders(date_from, date_to)
+        filename = current_app.order_service.export_orders(date_from, date_to)
         return jsonify({"message": f"Orders exported to {filename}"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-@order_bp.route("/orders/summary", methods=["GET"])
-def get_sales_summary():
-    """Get summary of sales data"""
+@order_bp.route("/printer/status", methods=["GET"])
+def get_printer_status():
+    """Get status of printers and queue"""
     try:
-        summary = order_service.get_sales_summary()
-        return jsonify(summary)
+        status = current_app.order_service.get_queue_status()
+        return jsonify(status)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

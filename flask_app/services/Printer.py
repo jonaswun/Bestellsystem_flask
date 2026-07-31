@@ -1,6 +1,8 @@
 """Python Implementation for the Printer Setup"""
 # Patch for missing DeviceNotFoundError
+from datetime import datetime
 from escpos.exceptions import Error
+import socket
 
 class DeviceNotFoundError(Error):
     pass
@@ -16,23 +18,19 @@ class Printer:
     """
 
     def __init__(self, ip_address:str, logo_path:str=None) -> None:
-        self.printer_handle = Network(ip_address, profile='TM-T20II')
-        # assert self.printer_handle.is_online()
-        self.logo_path = logo_path
-
-
+        self.ip_address = ip_address
+        self.printer_handle = Network(ip_address, profile='TM-T20II', timeout=3.0)
+        self.logo_path = logo_path       
+            
     def is_available(self) -> bool:
         """
         Check if the printer is available and can accept print jobs.
         Returns True if printer is online and reachable.
         """
         try:
-            # Try to create a test connection
-            test_printer = Network(self.printer_handle.host, self.printer_handle.port, timeout=5)
-            test_printer.open()
-            test_printer.close()
-            return True
-        except:
+            with socket.create_connection((self.ip_address, 9100), 1.0):
+                return True
+        except (socket.timeout, OSError):
             return False
     
     def print_logo(self, image_path:str) -> None:
@@ -59,18 +57,23 @@ class Printer:
 
         self.printer_handle.textln(f'Gesamt: {total_order_price:>20.2f}€')
 
-    def print_order(self, table_number:int, items, comment:str=None):
+    def print_order(self, table_number:int, items, comment:str=None, timestamp=None):
+        return
         if items == []:
             return
         else:
             if self.logo_path is not None:
                 self.print_logo(self.logo_path)
+            if timestamp is not None:
+                formatted_time = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S')
+                self.printer_handle.textln(f'Bestelldatum: {formatted_time}')
             self.printer_handle.textln(f'Tisch Nr. {table_number}')
             self.printer_handle.textln()
             self.print_items(items)
             if comment != '':
                 self.printer_handle.textln()
                 self.printer_handle.textln(f'Kommentar:\n{comment}')
+
             self.printer_handle.cut()
 
     def __del__(self) -> None:

@@ -8,23 +8,40 @@ from config import Config
 from routes.menu_routes import menu_bp
 from routes.order_routes import order_bp
 from routes.analytics_routes import analytics_bp
+from services.order_service import OrderService
+import logging
+
+
 
 
 def create_app():
     """Create and configure Flask application"""
+    
     app = Flask(__name__)
     CORS(app)
-    
+
+    # Single shared OrderService instance — one queue, one print thread
+    app.order_service = OrderService()
+
     # Register blueprints
     app.register_blueprint(menu_bp)
     app.register_blueprint(order_bp)
     app.register_blueprint(analytics_bp)
-    
+
     return app
 
 
 def main():
     """Main application entry point"""
+
+    log = logging.getLogger(__name__)
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+
+    log.info("App started")
+
     app = create_app()
     app.run(
         debug=Config.DEBUG, 

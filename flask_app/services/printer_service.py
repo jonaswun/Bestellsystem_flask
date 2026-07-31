@@ -33,7 +33,7 @@ class PrinterService:
         return (self.printer_food.is_available() and
                 self.printer_drinks.is_available())
 
-    def print_order(self, table_number, items, comment=""):
+    def print_order(self, table_number, items, comment="", timestamp=None):
         """Print order to appropriate printers based on item types"""
         try:
             # Separate items by type
@@ -42,10 +42,10 @@ class PrinterService:
 
             # Print to appropriate printers
             if items_food:
-                self.printer_food.print_order(table_number, items_food, comment=comment)
+                self.printer_food.print_order(table_number, items_food, comment=comment, timestamp=timestamp)
 
             if items_drinks:
-                self.printer_drinks.print_order(table_number, items_drinks, comment=comment)
+                self.printer_drinks.print_order(table_number, items_drinks, comment=comment, timestamp=timestamp)
 
             return True
         except Exception as e:
