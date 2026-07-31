@@ -5,6 +5,8 @@ from services.Printer import Printer
 from services.MockPrinter import MockPrinter
 from config import Config
 
+from models import Order
+
 class PrinterService:
     """Service for managing food and drink printers"""
 
@@ -33,24 +35,20 @@ class PrinterService:
         return (self.printer_food.is_available() and
                 self.printer_drinks.is_available())
 
-    def print_order(self, table_number, items, comment="", timestamp=None):
+    def print_order(self, order:Order):
         """Print order to appropriate printers based on item types"""
         try:
-            # Separate items by type
-            items_food = [item for item in items if item.get('type') == 'food']
-            items_drinks = [item for item in items if item.get('type') == 'drink']
+            if order.food_items:
+                self.printer_food.print_order(order, order.food_items)
 
-            # Print to appropriate printers
-            if items_food:
-                self.printer_food.print_order(table_number, items_food, comment=comment, timestamp=timestamp)
-
-            if items_drinks:
-                self.printer_drinks.print_order(table_number, items_drinks, comment=comment, timestamp=timestamp)
+            if order.drink_items:
+                self.printer_drinks.print_order(order, order.drink_items)
 
             return True
         except Exception as e:
             print(f"Error printing order: {e}")
             return False
+
 
     def get_printer_status(self):
         """Get status of both printers"""

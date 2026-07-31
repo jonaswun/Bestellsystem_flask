@@ -1,8 +1,11 @@
 """Python Implementation for the Printer Setup"""
 # Patch for missing DeviceNotFoundError
 from datetime import datetime
+# pyrefly: ignore [missing-import]
 from escpos.exceptions import Error
 import socket
+
+from models import Order
 
 class DeviceNotFoundError(Error):
     pass
@@ -49,18 +52,36 @@ class Printer:
         self.printer_handle.textln("")
         total_order_price = 0
         for item in items:
-            total_item_price = item['price'] * item['quantity']
-            total_order_price = total_order_price + total_item_price
-            self.printer_handle.textln("{:<20} {:>7.2f}€".format(item['name'], total_item_price))
-            if item['quantity'] > 1:
-                self.printer_handle.textln("{:>10}x {:>7.2f}€".format(item['quantity'], item['price']))
+            name = item.name if hasattr(item, 'name') else item['name']
+            price = item.price if hasattr(item, 'price') else item['price']
+            quantity = item.quantity if hasattr(item, 'quantity') else item['quantity']
+
+            total_item_price = price * quantity
+            total_order_price += total_item_price
+            self.printer_handle.textln("{:<20} {:>7.2f}€".format(name, total_item_price))
+            if quantity > 1:
+                self.printer_handle.textln("{:>10}x {:>7.2f}€".format(quantity, price))
 
         self.printer_handle.textln(f'Gesamt: {total_order_price:>20.2f}€')
 
-    def print_order(self, table_number:int, items, comment:str=None, timestamp=None):
-        return
+
+    def print_order(self, order:Order, items):
+        table_number = order.table_number
+        id = order.id
+        items = items
+        comment = order.comment
+        timestamp = order.timestamp
+        testing = True
+
         if items == []:
             return
+        elif testing == True:
+            print(f"Bestellnummer: {id}")
+            print(f"Tisch Nr. {table_number}")
+            print(f"Kommentar: {comment}")
+            print(f"Bestelldatum: {timestamp}")
+            formatted_time = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S')
+            self.printer_handle.textln("{} {} {} {} {} {}".format("ID:", id, "Time:", formatted_time, "TABLE:", table_number))
         else:
             if self.logo_path is not None:
                 self.print_logo(self.logo_path)

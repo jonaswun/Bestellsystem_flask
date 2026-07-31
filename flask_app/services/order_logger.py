@@ -1,14 +1,16 @@
 import sqlite3
 from datetime import datetime, timedelta
 from contextlib import contextmanager
+from config import Config
 
 
 class OrderLogger:
     """SQLite-based order logging system"""
 
-    def __init__(self, db_path='orders.db'):
-        self.db_path = db_path
+    def __init__(self, db_path=None):
+        self.db_path = db_path or Config.DATABASE_PATH
         self.init_database()
+
 
     def init_database(self):
         """Initialize the database and create tables if they don't exist"""
@@ -71,19 +73,16 @@ class OrderLogger:
         Save an order to the database
 
         Args:
-            data (dict): Order data containing tableNumber, orderedItems, comment
+            data (Order or dict): Order instance or dict containing order details
             user_agent (str): User agent string from request headers
 
         Returns:
             int: The ID of the created order
         """
-        timestamp = datetime.now().isoformat()
+        from models import Order
+        order = data if isinstance(data, Order) else Order.from_dict(data)
 
-        # Calculate total price
-        total_price = sum(
-            item.get('price', 0) * item.get('quantity', 1)
-            for item in data.get('orderedItems', [])
-        )
+        timestamp = datetime.now().isoformat()
 
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -94,30 +93,32 @@ class OrderLogger:
                 VALUES (?, ?, ?, ?, ?)
             ''', (
                 timestamp,
-                data.get('tableNumber'),
-                user_agent,
-                data.get('comment', ''),
-                total_price
+                order.table_number,
+                user_agent or order.user_agent,
+                order.comment,
+                order.total_price
             ))
 
             order_id = cursor.lastrowid
+            order.id = order_id
 
             # Insert order items
-            for item in data.get('orderedItems', []):
+            for item in order.items:
                 cursor.execute('''
                     INSERT INTO order_items (order_id, item_id, item_name, item_type, price, quantity)
                     VALUES (?, ?, ?, ?, ?, ?)
                 ''', (
                     order_id,
-                    item.get('id'),
-                    item.get('name'),
-                    item.get('type'),
-                    item.get('price', 0),
-                    item.get('quantity', 1)
+                    item.id,
+                    item.name,
+                    item.type,
+                    item.price,
+                    item.quantity
                 ))
 
             conn.commit()
             return order_id
+
 
     def get_order(self, order_id):
         """Get a specific order by ID"""
@@ -181,6 +182,49 @@ class OrderLogger:
             ''', (status, order_id))
             conn.commit()
             return cursor.rowcount > 0
+
+    def get_pending_orders(self):
+        """Get all pending (unprinted) orders from DB with their items for recovery"""
+        from models import Order
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT * FROM orders
+                WHERE status = 'pending'
+                ORDER BY id ASC
+            ''')
+            rows = cursor.fetchall()
+            pending_orders = []
+
+            for row in rows:
+                order_dict = dict(row)
+                cursor.execute('SELECT * FROM order_items WHERE order_id = ?', (order_dict['id'],))
+                items_rows = cursor.fetchall()
+
+                items = []
+                for item_row in items_rows:
+                    ir = dict(item_row)
+                    items.append({
+                        'id': ir.get('item_id'),
+                        'name': ir.get('item_name'),
+                        'type': ir.get('item_type'),
+                        'price': ir.get('price'),
+                        'quantity': ir.get('quantity'),
+                    })
+
+                order = Order.from_dict({
+                    'id': order_dict['id'],
+                    'table_number': order_dict['table_number'],
+                    'comment': order_dict.get('comment', ''),
+                    'timestamp': order_dict.get('timestamp'),
+                    'status': order_dict.get('status', 'pending'),
+                    'created_at': order_dict.get('created_at'),
+                    'orderedItems': items
+                })
+                pending_orders.append(order)
+
+            return pending_orders
+
 
     def get_sales_summary(self, date_from=None, date_to=None):
         """Get sales summary for a date range"""

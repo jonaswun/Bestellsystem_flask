@@ -3,6 +3,7 @@ Order-related routes for the ordering system.
 """
 import datetime
 from flask import Blueprint, jsonify, request, current_app
+from models import Order
 
 order_bp = Blueprint('order', __name__)
 
@@ -10,16 +11,19 @@ order_bp = Blueprint('order', __name__)
 @order_bp.route("/order", methods=["POST"])
 def place_order():
     """Place a new order"""
-    data = request.json
-    #save timestamp in unix time
-    data['timestamp'] = int(datetime.datetime.now().timestamp())
+    data = request.json or {}
+    if 'timestamp' not in data or not data['timestamp']:
+        data['timestamp'] = int(datetime.datetime.now().timestamp())
     user_agent = request.headers.get("User-Agent")
 
     try:
-        result = current_app.order_service.process_order(data, user_agent)
-        return jsonify({"message": "Order received!", "order": data, "order_id": result})
+        order = Order.from_dict(data)
+        order.user_agent = user_agent
+        result = current_app.order_service.process_order(order, user_agent)
+        return jsonify({"message": "Order received!", "order": order.to_dict(), "order_id": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @order_bp.route("/orders", methods=["GET"])
 def get_orders():
