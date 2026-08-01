@@ -160,8 +160,8 @@ const OrderSummary = () => {
                         <span title={printerStatus.food_printer?.available ? "Küche: Bereit" : "Küche: Offline"}>
                             {printerStatus.food_printer?.available ? "🟢" : "🔴"} Küche
                         </span>
-                        <span title={printerStatus.drinks_printer?.available ? "Bar: Bereit" : "Bar: Offline"}>
-                            {printerStatus.drinks_printer?.available ? "🟢" : "🔴"} Bar
+                        <span title={printerStatus.drinks_printer?.available ? "Theke: Bereit" : "Theke: Offline"}>
+                            {printerStatus.drinks_printer?.available ? "🟢" : "🔴"} Theke
                         </span>
                     </div>
                 )}

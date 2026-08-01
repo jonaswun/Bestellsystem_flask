@@ -2,6 +2,9 @@
 Main Flask application for the ordering system.
 Refactored to use modular architecture with separate routes and services.
 """
+import os
+import logging
+
 from flask import Flask
 from flask_cors import CORS
 from config import Config
@@ -9,8 +12,6 @@ from routes.menu_routes import menu_bp
 from routes.order_routes import order_bp
 from routes.analytics_routes import analytics_bp
 from services.order_service import OrderService
-import logging
-
 
 
 
@@ -18,6 +19,7 @@ def create_app():
     """Create and configure Flask application"""
     
     app = Flask(__name__)
+    app.config.from_object(Config)
     CORS(app)
 
     # Single shared OrderService instance — one queue, one print thread
@@ -43,9 +45,11 @@ def main():
     log.info("App started")
 
     app = create_app()
+    debug_mode = Config.DEBUG or os.getenv("FLASK_DEBUG", "0").lower() in ("1", "true", "yes")
+
     app.run(
-        debug=Config.DEBUG, 
-        host=Config.HOST, 
+        debug=debug_mode,
+        host=Config.HOST,
         port=Config.PORT
     )
 
