@@ -1,12 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Replace with your actual local IP address (e.g., 192.168.1.42)
-
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true,    // or use '0.0.0.0' to bind to all interfaces
+    host: true,
     port: 5173,
-  }
-})
+    // Proxy /api/* to Flask backend — mirrors the nginx rule used in production
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+})

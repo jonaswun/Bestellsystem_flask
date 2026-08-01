@@ -1,6 +1,9 @@
 """
 Configuration settings for the Flask ordering system.
 """
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
 
 class Config:
     """Application configuration class"""
@@ -12,14 +15,14 @@ class Config:
     
     # Printer settings
     MOCK_PRINTER = False
-    DRINKS_PRINTER_IP = "192.168.0.99"
+    DRINKS_PRINTER_IP = "192.168.0.24"
     FOOD_PRINTER_IP = "192.168.0.24"
-    LOGO_PATH = "resources/Rucksackberger_solo.png"
+    LOGO_PATH = str(BASE_DIR / "resources" / "Rucksackberger_solo.png")
     
     # File paths
-    MENU_PATH = "resources/menu.json"
-    DATABASE_PATH = "data/orders.db"
-    CSV_FALLBACK_PATH = "data.csv"
+    MENU_PATH = str(BASE_DIR / "resources" / "menu.json")
+    DATABASE_PATH = str(BASE_DIR / "data" / "orders.db")
+    CSV_FALLBACK_PATH = str(BASE_DIR / "data.csv")
     
     # Order processing settings
     ORDER_QUEUE_TIMEOUT = 1.0

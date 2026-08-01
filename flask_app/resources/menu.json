@@ -37,8 +37,9 @@
     {"id": 65, "name": "Wurst Pommes", "price":  6.00, "type": "food"},
     {"id": 66, "name": "Curry Brot", "price":  4.50, "type": "food"},
     {"id": 67, "name": "Curry Pommes", "price":  7.00, "type": "food"},
-    {"id": 68, "name": "Pommes", "price": 3.50}
+    {"id": 68, "name": "Pommes", "price": 3.50, "type": "food"}
   ],
+
   "Kaffee/Kuchen": [
     {"id": 90, "name": "Kaffee", "price": 2.50, "type": "drink"},
     {"id": 91, "name": "Kuchen/Torten", "price": 2.50, "type": "drink"}

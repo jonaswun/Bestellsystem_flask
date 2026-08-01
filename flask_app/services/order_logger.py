@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime, timedelta
 from contextlib import contextmanager
+from pathlib import Path
 from config import Config
 
 
@@ -14,6 +15,7 @@ class OrderLogger:
 
     def init_database(self):
         """Initialize the database and create tables if they don't exist"""
+        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
 
