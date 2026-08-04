@@ -8,8 +8,18 @@ menu_bp = Blueprint('menu', __name__)
 
 @menu_bp.route("/menu", methods=["GET"])
 def get_menu():
-    """Get the menu items"""
+    """
+    Get the menu items
+    ---
+    tags:
+      - Menu
+    summary: Fetch full menu categorized into Food, Drinks, etc.
+    responses:
+      200:
+        description: Categorized JSON dictionary of menu items
+    """
     menu = load_menu()
     response = make_response(jsonify(menu))
     response.headers["Content-Type"] = "application/json; charset=utf-8"
     return response
+

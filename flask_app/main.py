@@ -7,6 +7,7 @@ import logging
 
 from flask import Flask
 from flask_cors import CORS
+from flasgger import Swagger
 from config import Config
 from routes.menu_routes import menu_bp
 from routes.order_routes import order_bp
@@ -14,10 +15,9 @@ from routes.analytics_routes import analytics_bp
 from services.order_service import OrderService
 
 
-
 def create_app():
     """Create and configure Flask application"""
-    
+
     app = Flask(__name__)
     app.config.from_object(Config)
     CORS(app)
@@ -25,10 +25,41 @@ def create_app():
     # Single shared OrderService instance — one queue, one print thread
     app.order_service = OrderService()
 
-    # Register blueprints
+    # Register blueprints BEFORE Swagger init so all routes are discovered
     app.register_blueprint(menu_bp)
     app.register_blueprint(order_bp)
     app.register_blueprint(analytics_bp)
+
+    # Configure Swagger UI — must come after blueprint registration
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": "apispec",
+                "route": "/apispec.json",
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/apidocs/"
+    }
+
+    template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "Bestellsystem Flask REST API",
+            "description": "Interactive API Documentation for the Ordering & Thermal Printing System",
+            "contact": {
+                "name": "Development Team"
+            },
+            "version": "1.0.0"
+        },
+        "basePath": "/"
+    }
+
+    Swagger(app, config=swagger_config, template=template)
 
     return app
 
@@ -40,7 +71,7 @@ def main():
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
+    )
 
     log.info("App started")
 

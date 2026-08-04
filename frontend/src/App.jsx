@@ -92,8 +92,6 @@ function MenuPage() {
 
     return (
         <div>
-            <h1>Menü</h1>
-
             <div className="category-buttons">
                 {Object.keys(menu).map((category) => (
                     <button
@@ -102,7 +100,8 @@ function MenuPage() {
                         style={{
                             fontWeight: selectedCategory === category ? "bold" : "normal",
                             backgroundColor: selectedCategory === category ? "#062c55ff" : "#2157a5",
-                            color: "white"
+                            color: "white",
+                            fontSize: "14px",
                         }}
                     >
                         {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -113,7 +112,7 @@ function MenuPage() {
             <div>
                 {(menu[selectedCategory] || []).map(item => (
                     <div key={item.id} className="menu-item">
-                        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "20px", fontSize: "14px"}}>
                             <button onClick={() => decreaseQuantity(item.id)}>-</button>
                             <span>{order[item.id] || 0}</span>
                             <button onClick={() => increaseQuantity(item.id)}>+</button>
@@ -130,6 +129,7 @@ function MenuPage() {
                     rows="2"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
+                    style={{ fontSize: "14px" }}
                     placeholder="Optionaler Kommentar, z.B. Sonderwünsche..."
                 />
             </div>
@@ -152,7 +152,7 @@ function MenuPage() {
                 />
             </div>
 
-            <div style={{ marginTop: "20px" }}>
+            <div style={{ marginTop: "5px" }}>
                 <button
                     onClick={goToSummary}
                     style={{

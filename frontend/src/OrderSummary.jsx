@@ -255,7 +255,7 @@ const OrderSummary = () => {
                             .filter(item => item.quantity > 0)
                             .map(item => (
                                 <li key={item.id} className="menu-item" style={{ marginBottom: "8px" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                         <button onClick={() => decreaseSelection(item.id)}>-</button>
                                         <span>{selectedItems[item.id] || 0} / {item.quantity}</span>
                                         <button onClick={() => increaseSelection(item.id)}>+</button>

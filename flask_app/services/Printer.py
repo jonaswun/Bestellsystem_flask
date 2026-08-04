@@ -4,7 +4,7 @@ from datetime import datetime
 # pyrefly: ignore [missing-import]
 from escpos.exceptions import Error
 import socket
-
+import logging
 from models import Order
 
 class DeviceNotFoundError(Error):
@@ -105,6 +105,8 @@ class Printer:
 
             printer.cut()
         printer.close()
+
+        return True
 
     def __del__(self) -> None:
         pass

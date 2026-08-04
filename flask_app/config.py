@@ -12,22 +12,22 @@ class Config:
     DEBUG = False
     HOST = '0.0.0.0'
     PORT = 5000
-    
+
     # Printer settings
     MOCK_PRINTER = False
     DRINKS_PRINTER_IP = "192.168.0.24"
     FOOD_PRINTER_IP = "192.168.0.24"
     LOGO_PATH = str(BASE_DIR / "resources" / "Rucksackberger_solo.png")
-    
+
     # File paths
     MENU_PATH = str(BASE_DIR / "resources" / "menu.json")
     DATABASE_PATH = str(BASE_DIR / "data" / "orders.db")
     CSV_FALLBACK_PATH = str(BASE_DIR / "data.csv")
-    
+
     # Order processing settings
     ORDER_QUEUE_TIMEOUT = 1.0
     DEFAULT_ORDER_LIMIT = 50
-    
+
     @classmethod
     def get_printer_config(cls):
         """Get printer configuration"""

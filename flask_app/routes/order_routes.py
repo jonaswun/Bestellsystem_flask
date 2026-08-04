@@ -10,7 +10,54 @@ order_bp = Blueprint('order', __name__)
 
 @order_bp.route("/order", methods=["POST"])
 def place_order():
-    """Place a new order"""
+    """
+    Place a new order
+    ---
+    tags:
+      - Orders
+    summary: Create a new order and queue for thermal printing
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - tableNumber
+            - orderedItems
+          properties:
+            tableNumber:
+              type: integer
+              example: 5
+            comment:
+              type: string
+              example: "ohne Eis"
+            orderedItems:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Pils"
+                  quantity:
+                    type: integer
+                    example: 2
+                  price:
+                    type: number
+                    example: 3.50
+                  type:
+                    type: string
+                    example: "drink"
+    responses:
+      200:
+        description: Order successfully created and queued
+      500:
+        description: Error processing order
+    """
     data = request.json or {}
     if 'timestamp' not in data or not data['timestamp']:
         data['timestamp'] = int(datetime.datetime.now().timestamp())
@@ -23,6 +70,7 @@ def place_order():
         return jsonify({"message": "Order received!", "order": order.to_dict(), "order_id": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @order_bp.route("/orders", methods=["GET"])
@@ -115,8 +163,8 @@ def update_order_status(order_id):
 @order_bp.route("/export/orders", methods=["GET"])
 def export_orders():
     """Export orders to CSV"""
-    date_from = request.args.get('from')
-    date_to = request.args.get('to')
+    date_from = '20260804_173004' # request.args.get('from')
+    date_to = '20260704_173004' #request.args.get('to')
 
     try:
         filename = current_app.order_service.export_orders(date_from, date_to)
@@ -126,7 +174,45 @@ def export_orders():
 
 @order_bp.route("/printer/status", methods=["GET"])
 def get_printer_status():
-    """Get status of printers and queue"""
+    """
+    Get status of printers and queue
+    ---
+    tags:
+      - Printer
+    summary: Check online availability of food and drink printers and queue size
+    responses:
+      200:
+        description: Returns status of food_printer, drinks_printer, and pending order count
+        schema:
+          type: object
+          properties:
+            pending_orders:
+              type: integer
+              example: 0
+            printer_status:
+              type: object
+              properties:
+                food_printer:
+                  type: object
+                  properties:
+                    available:
+                      type: boolean
+                      example: true
+                    type:
+                      type: string
+                      example: "physical"
+                drinks_printer:
+                  type: object
+                  properties:
+                    available:
+                      type: boolean
+                      example: true
+                    type:
+                      type: string
+                      example: "physical"
+      500:
+        description: Server error
+    """
     try:
         status = current_app.order_service.get_queue_status()
         return jsonify(status)

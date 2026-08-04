@@ -6,6 +6,16 @@ body {
   background-color: #ffffff8e;
 }
 
+html, body {
+  min-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  padding-bottom: 5rem;
+}
+
 h1, h2, h3 {
   text-align: center;
 }
@@ -13,13 +23,13 @@ h1, h2, h3 {
 button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  margin: 0.25rem;
+  margin: 0.1rem;
   border: none;
   border-radius: 6px;
   background-color: #2157a5;
   color: white;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 40px;
+  min-height: 40px;
 }
 
 button:disabled {
@@ -50,9 +60,9 @@ input, textarea {
   display: flex;
   justify-content: left;
   align-items: center;
-  margin: 0.1rem 0;
+  margin: 0.01rem 0;
   background: white;
-  padding: 0.1rem;
+  padding: 0.05rem;
   border-radius: 8px;
   box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
@@ -61,7 +71,8 @@ input, textarea {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 0.05rem;
+  
 }
 
 @media (min-width: 768px) {

@@ -5,14 +5,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 5173,
+    port: 80,
     // Proxy /api/* to Flask backend — mirrors the nginx rule used in production
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://192.168.0.137:5000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
-})
+})
