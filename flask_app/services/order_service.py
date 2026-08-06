@@ -12,8 +12,30 @@ from config import Config
 import logging
 import time
 
-
+# Add Pydantic imports
+from pydantic import BaseModel, Field, validator
+from typing import List, Optional
 from models import Order
+
+class MenuItem(BaseModel):
+    """Pydantic model for menu items"""
+    name: str
+    price: float = Field(gt=0)
+    category: Optional[str] = None
+    quantity: int = Field(default=1, ge=1)
+
+class OrderValidation(BaseModel):
+    """Pydantic model for order validation"""
+    table_number: int = Field(gt=0)
+    items: List[MenuItem]
+    timestamp: Optional[datetime] = None
+    user_agent: Optional[str] = None
+    
+    @validator('items')
+    def validate_items(cls, v):
+        if not v:
+            raise ValueError('Order must contain at least one item')
+        return v
 
 class OrderService:
     """Service for managing order processing and data operations"""
@@ -80,11 +102,19 @@ class OrderService:
             except Exception as e:
                 self.log.error(f"Error processing order: {e}")
 
-
     def process_order(self, order_data, user_agent=None):
         """Process a new order - save to database and add to print queue"""
         try:
-            order = order_data if isinstance(order_data, Order) else Order.from_dict(order_data)
+            # Validate order data using Pydantic
+            if isinstance(order_data, dict):
+                validated_order = OrderValidation(**order_data)
+                # Convert back to dict for further processing
+                order_dict = validated_order.dict()
+                order = Order.from_dict(order_dict)
+            else:
+                # If it's already an Order object, validate it
+                order = order_data
+                
             if user_agent:
                 order.user_agent = user_agent
 
@@ -146,7 +176,6 @@ class OrderService:
             if ts == order_timestamp:
                 self.dashboard_order_queue.queue.remove(item)
                 break
-
 
     def update_order_status(self, order_id, status):
         """Update the status of an order"""
