@@ -4,21 +4,24 @@ File utility functions for the ordering system.
 import json
 import os
 import csv
+import logging
 from datetime import datetime
 from config import Config
+
+log = logging.getLogger(__name__)
 
 def load_menu():
     """Load menu from JSON file"""
     try:
         with open(Config.MENU_PATH, encoding="utf-8") as f:
             menu = json.load(f)
-            print("Menu loaded successfully")
+            log.info("Menu loaded successfully")
             return menu
     except FileNotFoundError:
-        print(f"Menu file not found: {Config.MENU_PATH}")
+        log.error(f"Menu file not found: {Config.MENU_PATH}")
         return {}
     except json.JSONDecodeError as e:
-        print(f"Error parsing menu JSON: {e}")
+        log.error(f"Error parsing menu JSON: {e}")
         return {}
 
 
@@ -42,10 +45,10 @@ def save_order_csv(filename, data, user_type):
                 json.dumps(data.get('orderedItems', [])),
                 data.get('comment', '')
             ])
-            print(f"Order saved to CSV: {filename}")
+            log.info(f"Order saved to CSV: {filename}")
             return None
     except Exception as e:
-        print(f"Error saving to CSV: {e}")
+        log.exception(f"Error saving to CSV: {filename}")
         return None
 
 
@@ -53,7 +56,7 @@ def ensure_directory_exists(directory_path):
     """Ensure a directory exists, create if it doesn't"""
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-        print(f"Created directory: {directory_path}")
+        log.info(f"Created directory: {directory_path}")
 
 
 def get_file_size(file_path):

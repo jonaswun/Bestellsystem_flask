@@ -1,15 +1,20 @@
+import logging
+
+log = logging.getLogger(__name__)
+
+
 class MockPrinter:
     def __init__(self, *args, **kwargs):
         pass
 
     def print_logo(self, *args, **kwargs):
-        print("Mock: Printing logo")
+        log.info("Mock: Printing logo")
 
     def print_items(self, *args, **kwargs):
-        print("Mock: Printing items")
+        log.info("Mock: Printing items")
 
     def print_order(self, *args, **kwargs):
-        print("Mock: Printing order")
+        log.info("Mock: Printing order")
 
     def is_available(self) -> bool:
         """

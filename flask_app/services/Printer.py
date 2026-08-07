@@ -7,6 +7,10 @@ import socket
 import logging
 from models import Order
 
+from config import Config
+
+log = logging.getLogger(__name__)
+
 class DeviceNotFoundError(Error):
     pass
 
@@ -33,8 +37,17 @@ class Printer:
         try:
             with socket.create_connection((self.ip_address, 9100), 1.0):
                 return True
-        except (socket.timeout, OSError):
+        except (socket.timeout, OSError) as e:
+            log.debug(f"Printer {self.ip_address} unreachable: {e}")
             return False
+
+    def format_time(self, timestamp):
+        if isinstance(timestamp, (int, float)):
+            return datetime.fromtimestamp(timestamp).strftime("%H:%M:%S")
+        elif isinstance(timestamp, str):
+            return timestamp
+        else:
+            raise TypeError(f"Unsupported type: {type(timestamp)}")
 
     def print_logo(self, image_path:str) -> None:
         """
@@ -75,28 +88,28 @@ class Printer:
         items = items
         comment = order.comment
         timestamp = order.timestamp
-        testing = True
+
         printer = Network(self.ip_address, profile='TM-T20II', timeout=3.0)
         printer.open()
 
 
         if items == []:
             return
-        elif testing is True:
-            print(f"Bestellnummer: {id}")
-            print(f"Tisch Nr. {table_number}")
-            print(f"Kommentar: {comment}")
-            print(f"Bestelldatum: {timestamp}")
+        elif Config.MINIMAL_PRINTER_OUTPUT:
+            log.debug(f"Bestellnummer: {id}")
+            log.debug(f"Tisch Nr. {table_number}")
+            log.debug(f"Kommentar: {comment}")
+            log.debug(f"Bestelldatum: {timestamp}")
             # formatted_time = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S')
             
             printer.textln("{} {} {} {} {} {}".format("ID:", id, "Time:", timestamp, "TABLE:", table_number))
         else:
-            if self.logo_path is not None:
-                self.print_logo(self.logo_path)
+            # if self.logo_path is not None:
+            #     self.print_logo(self.logo_path)
             if timestamp is not None:
-                formatted_time = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S')
+                formatted_time = self.format_time(timestamp)
                 printer.textln(f'Bestelldatum: {formatted_time}')
-            printer.textln(f'Tisch Nr. {table_number}')
+            printer.textln(f'Tisch Nr. {table_number}\tBestellnr: {id}')
             printer.textln()
             self.print_items(printer, items)
             if comment != '':

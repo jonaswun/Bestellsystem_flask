@@ -2,10 +2,12 @@
 Order-related routes for the ordering system.
 """
 import datetime
+import logging
 from flask import Blueprint, jsonify, request, current_app
 from models import Order
 
 order_bp = Blueprint('order', __name__)
+log = logging.getLogger(__name__)
 
 
 @order_bp.route("/order", methods=["POST"])
@@ -67,8 +69,10 @@ def place_order():
         order = Order.from_dict(data)
         order.user_agent = user_agent
         result = current_app.order_service.process_order(order, user_agent)
+        log.info(f"Order placed for table {order.table_number} (order_id={result})")
         return jsonify({"message": "Order received!", "order": order.to_dict(), "order_id": result})
     except Exception as e:
+        log.exception("Error placing order")
         return jsonify({"error": str(e)}), 500
 
 
@@ -83,48 +87,77 @@ def get_orders():
         orders = current_app.order_service.get_orders(table_number, limit)
         return jsonify({"orders": orders})
     except Exception as e:
+        log.exception("Error fetching orders")
         return jsonify({"error": str(e)}), 500
 
 @order_bp.route("/orders/dashboard/food", methods=["GET"])
 def get_dashboard_orders():
     """Get orders for the dashboard"""
     try:
-        print("Fetching dashboard orders...", flush=True)
+        log.debug("Fetching dashboard orders")
         filter = {"key": "type", "value": "food"}
         orders = current_app.order_service.get_dashboard_orders(filter)
         return jsonify({"orders": orders})
     except Exception as e:
+        log.exception("Error fetching dashboard orders")
         return jsonify({"error": str(e)}), 500
 
 @order_bp.route("/orders/dashboard/complete", methods=["PUT"])
 def complete_dashboard_orders():
-    """Complete a dashboard order"""
+    """
+    Complete a dashboard order
+    ---
+    tags:
+      - Orders
+    summary: Mark an order as completed (persisted in the database)
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - order_id
+          properties:
+            order_id:
+              type: integer
+              example: 42
+    responses:
+      200:
+        description: Order marked as completed
+      400:
+        description: Missing order_id
+      404:
+        description: Order not found
+      500:
+        description: Server error
+    """
     try:
         # Validate request body exists
         if not request.is_json:
             return jsonify({"error": "Request must be JSON"}), 400
 
-        # Get and validate order_timestamp
+        # Get and validate order_id
         data = request.json
-        order_timestamp = data.get("timestamp")
-        if order_timestamp is None:
-            return jsonify({"error": "Order timestamp is required"}), 400
+        order_id = data.get("order_id")
+        if order_id is None:
+            return jsonify({"error": "order_id is required"}), 400
 
-        # Log the order completion attempt
-        print(f"Attempting to complete order {order_timestamp}", flush=True)
+        log.info(f"Attempting to complete order {order_id}")
 
-        # Remove order from queue
-        current_app.order_service.remove_order_from_queue(order_timestamp)
+        success = current_app.order_service.complete_order(order_id)
+        if not success:
+            return jsonify({"success": False, "error": "Order not found"}), 404
 
         # Return success response
         return jsonify({
             "success": True,
-            "message": f"Order {order_timestamp} completed successfully",
-            "order_id": order_timestamp
+            "message": f"Order {order_id} completed successfully",
+            "order_id": order_id
         })
 
     except Exception as e:
-        print(f"Error completing order: {str(e)}", flush=True)
+        log.exception("Error completing order")
         return jsonify({
             "success": False,
             "error": f"Failed to complete order: {str(e)}"
@@ -140,6 +173,7 @@ def get_order_details(order_id):
         else:
             return jsonify({"error": "Order not found"}), 404
     except Exception as e:
+        log.exception(f"Error fetching order details for order_id={order_id}")
         return jsonify({"error": str(e)}), 500
 
 @order_bp.route("/orders/<int:order_id>/status", methods=["PUT"])
@@ -154,22 +188,48 @@ def update_order_status(order_id):
     try:
         success = current_app.order_service.update_order_status(order_id, status)
         if success:
+            log.info(f"Order {order_id} status updated to '{status}'")
             return jsonify({"message": "Status updated successfully"})
         else:
             return jsonify({"error": "Order not found"}), 404
     except Exception as e:
+        log.exception(f"Error updating status for order_id={order_id}")
         return jsonify({"error": str(e)}), 500
 
 @order_bp.route("/export/orders", methods=["GET"])
 def export_orders():
-    """Export orders to CSV"""
-    date_from = '20260804_173004' # request.args.get('from')
-    date_to = '20260704_173004' #request.args.get('to')
+    """
+    Export orders to CSV
+    ---
+    tags:
+      - Orders
+    summary: Export orders (with items) to a CSV file, optionally filtered by date range
+    parameters:
+      - in: query
+        name: from
+        type: string
+        description: "Start date filter (ISO format: YYYY-MM-DD)"
+        required: false
+      - in: query
+        name: to
+        type: string
+        description: "End date filter (ISO format: YYYY-MM-DD)"
+        required: false
+    responses:
+      200:
+        description: CSV export filename
+      500:
+        description: Server error
+    """
+    date_from = request.args.get('from')
+    date_to = request.args.get('to')
 
     try:
         filename = current_app.order_service.export_orders(date_from, date_to)
+        log.info(f"Orders exported to {filename}")
         return jsonify({"message": f"Orders exported to {filename}"})
     except Exception as e:
+        log.exception("Error exporting orders")
         return jsonify({"error": str(e)}), 500
 
 @order_bp.route("/printer/status", methods=["GET"])
@@ -217,4 +277,5 @@ def get_printer_status():
         status = current_app.order_service.get_queue_status()
         return jsonify(status)
     except Exception as e:
+        log.exception("Error fetching printer status")
         return jsonify({"error": str(e)}), 500

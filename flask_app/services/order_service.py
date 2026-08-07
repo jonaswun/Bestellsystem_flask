@@ -48,7 +48,7 @@ class OrderService:
         self.order_logger = OrderLogger(Config.DATABASE_PATH)
         self.printer_service = PrinterService()
         self.printer_order_queue = Queue()
-        self.dashboard_order_queue = Queue()
+
         self._start_order_processing_thread()
         self._recover_pending_orders()
 
@@ -60,7 +60,7 @@ class OrderService:
                 self.log.info(f"Recovered {len(pending_orders)} unprinted order(s) from database for processing.")
                 for order in pending_orders:
                     self.printer_order_queue.put(order)
-                    self.dashboard_order_queue.put(order)
+
             else:
                 self.log.info("No unprinted orders found in database on startup.")
         except Exception as e:
@@ -100,7 +100,7 @@ class OrderService:
                     self.printer_order_queue.put(order)
 
             except Exception as e:
-                self.log.error(f"Error processing order: {e}")
+                self.log.exception("Error processing order from queue")
 
     def process_order(self, order_data, user_agent=None):
         """Process a new order - save to database and add to print queue"""
@@ -125,14 +125,13 @@ class OrderService:
             order.id = order_id
             self.log.info(f"Order saved to database with ID: {order_id}")
 
-            # Add to queues
+            # Add to print queue — dashboard state is read directly from the DB
             self.printer_order_queue.put(order)
-            self.dashboard_order_queue.put(order)
             self.log.info(f"Order added to print queue for table {order.table_number}")
 
             return order_id
         except Exception as e:
-            self.log.error(f"Error saving order: {e}")
+            self.log.exception("Error saving order, falling back to CSV")
             # Fallback to CSV if SQLite fails
             raw_data = order_data.to_dict() if hasattr(order_data, 'to_dict') else order_data
             return save_order_csv(Config.CSV_FALLBACK_PATH, raw_data, user_agent)
@@ -152,31 +151,22 @@ class OrderService:
 
     def get_dashboard_orders(self, filter=None):
         """
-        Get recent orders for dashboard display with optional filtering
+        Get active (non-completed) orders for dashboard display, sourced directly
+        from the database — this is the single source of truth, consistent across
+        worker processes and durable across restarts.
         Args:
-            filter (dict): Dictionary containing 'key' and 'value' to filter by
+            filter (dict): Dictionary containing 'key' and 'value' to filter by item type
         Returns:
             list: Filtered list of order dicts
         """
-        orders_in_queue = list(self.dashboard_order_queue.queue)
-        self.log.info(f"Retrieved {len(orders_in_queue)} orders from dashboard queue for filtering.")
-        filtered_orders = []
+        item_type = filter.get('value') if filter else None
+        orders = self.order_logger.get_active_orders(item_type)
+        self.log.info(f"Retrieved {len(orders)} active order(s) from database for dashboard.")
+        return [order.to_dict() for order in orders]
 
-        for item in orders_in_queue:
-            order = item if isinstance(item, Order) else Order.from_dict(item)
-
-            if not filter or order.has_item_type(filter.get('value')):
-                filtered_orders.append(order.to_dict())
-
-        return filtered_orders
-
-    def remove_order_from_queue(self, order_timestamp):
-        """Remove an order from the dashboard queue"""
-        for item in list(self.dashboard_order_queue.queue):
-            ts = item.timestamp if isinstance(item, Order) else item.get('timestamp')
-            if ts == order_timestamp:
-                self.dashboard_order_queue.queue.remove(item)
-                break
+    def complete_order(self, order_id):
+        """Mark an order as completed (persisted in the database)"""
+        return self.order_logger.update_order_status(order_id, 'completed')
 
     def update_order_status(self, order_id, status):
         """Update the status of an order"""
@@ -184,9 +174,9 @@ class OrderService:
 
     def get_sales_summary(self, date_from=None, date_to=None):
         """Get sales analytics"""
-        ret = self.order_logger.get_sales_summary(date_from, date_to)
-        print(ret)
-        return ret
+        summary = self.order_logger.get_sales_summary(date_from, date_to)
+        self.log.debug(f"Sales summary ({date_from} - {date_to}): {summary}")
+        return summary
 
     def get_popular_items(self, limit=10):
         """Get most popular menu items"""

@@ -23,16 +23,16 @@ function Dashboard() {
         }
     };
 
-    const handleComplete = async (order_timestamp) => {
+    const handleComplete = async (order_id) => {
         try {
             // Send request to mark order as complete
             const response = await axios.put('/api/orders/dashboard/complete', {
-                timestamp: order_timestamp  // This matches your backend's expected format
+                order_id
             });
             console.log('Complete response:', response.data); // Debug log
 
             // Update local state to remove completed order
-            setOrders(prevOrders => prevOrders.filter(order => order.timestamp !== order_timestamp));
+            setOrders(prevOrders => prevOrders.filter(order => order.id !== order_id));
 
         } catch (err) {
             setError('Failed to complete order');
@@ -75,7 +75,7 @@ function Dashboard() {
                             Total: {order.totalCost.toFixed(2)}€
                         </div>
                         <button
-                            onClick={() => handleComplete(order.timestamp)}
+                            onClick={() => handleComplete(order.id)}
                             className="complete-button"
                         >
                             Erledigt

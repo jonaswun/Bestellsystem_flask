@@ -11,10 +11,10 @@ import argparse
 from typing import Dict, Any
 from config import Config
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
+# No module-level basicConfig() here: when imported by the Flask app or tests
+# this module must use the centrally configured root logger (see
+# utils.logging_config.setup_logging). Standalone CLI usage configures
+# logging itself in main() below.
 logger = logging.getLogger("PrinterHealthChecker")
 
 
@@ -112,6 +112,9 @@ class PrinterHealthMonitor:
 
 
 def main():
+    from utils.logging_config import setup_logging
+    setup_logging(Config.LOG_LEVEL, Config.LOG_DIR)
+
     parser = argparse.ArgumentParser(description="Cyclic Printer Health Checker for Real Hardware")
     parser.add_argument("--interval", type=float, default=10.0, help="Check interval in seconds (default: 10)")
     parser.add_argument("--food-ip", type=str, default=None, help="Override Food Printer IP")

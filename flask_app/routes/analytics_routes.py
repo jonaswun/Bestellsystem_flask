@@ -1,9 +1,11 @@
 """
 Analytics-related routes for the ordering system.
 """
+import logging
 from flask import Blueprint, jsonify, request, current_app
 
 analytics_bp = Blueprint('analytics', __name__)
+log = logging.getLogger(__name__)
 
 
 @analytics_bp.route("/analytics/sales", methods=["GET"])
@@ -38,6 +40,7 @@ def get_sales_summary():
         summary = current_app.order_service.get_sales_summary(date_from, date_to)
         return jsonify(summary)
     except Exception as e:
+        log.exception("Error fetching sales summary")
         return jsonify({"error": str(e)}), 500
 
 @analytics_bp.route("/analytics/popular-items", methods=["GET"])
@@ -79,4 +82,5 @@ def get_popular_items():
         items = current_app.order_service.get_popular_items(limit)
         return jsonify({"popular_items": items})
     except Exception as e:
+        log.exception("Error fetching popular items")
         return jsonify({"error": str(e)}), 500

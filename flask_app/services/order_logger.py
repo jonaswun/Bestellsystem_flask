@@ -59,6 +59,11 @@ class OrderLogger:
                 ON orders (table_number)
             ''')
 
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_orders_status
+                ON orders (status)
+            ''')
+
             conn.commit()
 
     @contextmanager
@@ -198,9 +203,37 @@ class OrderLogger:
             conn.commit()
             return cursor.rowcount > 0
 
+    def _row_to_order(self, order_row, cursor):
+        """Build an Order (with items) from an `orders` row using the given cursor"""
+        from models import Order
+        order_dict = dict(order_row)
+        cursor.execute('SELECT * FROM order_items WHERE order_id = ?', (order_dict['id'],))
+        items_rows = cursor.fetchall()
+
+        items = []
+        for item_row in items_rows:
+            ir = dict(item_row)
+            items.append({
+                'id': ir.get('item_id'),
+                'name': ir.get('item_name'),
+                'type': ir.get('item_type'),
+                'price': ir.get('price'),
+                'quantity': ir.get('quantity'),
+            })
+
+        return Order.from_dict({
+            'id': order_dict['id'],
+            'table_number': order_dict['table_number'],
+            'comment': order_dict.get('comment', ''),
+            'timestamp': order_dict.get('timestamp'),
+            'status': order_dict.get('status', 'pending'),
+            'created_at': order_dict.get('created_at'),
+            'user_agent': order_dict.get('user_agent'),
+            'orderedItems': items
+        })
+
     def get_pending_orders(self):
         """Get all pending (unprinted) orders from DB with their items for recovery"""
-        from models import Order
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
@@ -209,37 +242,36 @@ class OrderLogger:
                 ORDER BY id ASC
             ''')
             rows = cursor.fetchall()
-            pending_orders = []
+            return [self._row_to_order(row, cursor) for row in rows]
 
-            for row in rows:
-                order_dict = dict(row)
-                cursor.execute('SELECT * FROM order_items WHERE order_id = ?', (order_dict['id'],))
-                items_rows = cursor.fetchall()
+    def get_active_orders(self, item_type=None):
+        """
+        Get all non-completed orders (with items) for dashboard/kitchen display.
+        This is the single source of truth for "what's still open" — no in-memory
+        state is kept, so this reflects every worker process consistently.
 
-                items = []
-                for item_row in items_rows:
-                    ir = dict(item_row)
-                    items.append({
-                        'id': ir.get('item_id'),
-                        'name': ir.get('item_name'),
-                        'type': ir.get('item_type'),
-                        'price': ir.get('price'),
-                        'quantity': ir.get('quantity'),
-                    })
-
-                order = Order.from_dict({
-                    'id': order_dict['id'],
-                    'table_number': order_dict['table_number'],
-                    'comment': order_dict.get('comment', ''),
-                    'timestamp': order_dict.get('timestamp'),
-                    'status': order_dict.get('status', 'pending'),
-                    'created_at': order_dict.get('created_at'),
-                    'processed': order_dict.get('processed', False),
-                    'orderedItems': items
-                })
-                pending_orders.append(order)
-
-            return pending_orders
+        Args:
+            item_type (str): Optional item type ('food'/'drink') an order must
+                contain at least one of; the full order (all items) is still returned.
+        """
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if item_type:
+                cursor.execute('''
+                    SELECT DISTINCT o.*
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    WHERE o.status != 'completed' AND oi.item_type = ?
+                    ORDER BY o.created_at ASC
+                ''', (item_type,))
+            else:
+                cursor.execute('''
+                    SELECT * FROM orders
+                    WHERE status != 'completed'
+                    ORDER BY created_at ASC
+                ''')
+            rows = cursor.fetchall()
+            return [self._row_to_order(row, cursor) for row in rows]
 
 
     def get_sales_summary(self, date_from=None, date_to=None):

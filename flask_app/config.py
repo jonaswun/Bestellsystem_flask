@@ -1,9 +1,14 @@
 """
 Configuration settings for the Flask ordering system.
 """
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
+
+# Loads repo-root .env (shared with docker-compose); real env vars still win.
+load_dotenv(BASE_DIR.parent / ".env")
 
 class Config:
     """Application configuration class"""
@@ -13,10 +18,15 @@ class Config:
     HOST = '0.0.0.0'
     PORT = 5000
 
-    # Printer settings
+    # Logging settings (override via LOG_LEVEL / LOG_DIR env vars)
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    LOG_DIR = os.getenv('LOG_DIR', str(BASE_DIR / "data" / "logs"))
+
+    # Printer settings (override via FOOD_PRINTER_IP / DRINKS_PRINTER_IP env vars)
     MOCK_PRINTER = False
-    DRINKS_PRINTER_IP = "192.168.0.24"
-    FOOD_PRINTER_IP = "192.168.0.24"
+    MINIMAL_PRINTER_OUTPUT = os.getenv('MINIMAL_PRINTER_OUTPUT', 'False').lower() in ('1', 'true', 'yes')
+    DRINKS_PRINTER_IP = os.getenv('DRINKS_PRINTER_IP', '')
+    FOOD_PRINTER_IP = os.getenv('FOOD_PRINTER_IP', '')
     LOGO_PATH = str(BASE_DIR / "resources" / "Rucksackberger_solo.png")
 
     # File paths

@@ -13,14 +13,26 @@ from routes.menu_routes import menu_bp
 from routes.order_routes import order_bp
 from routes.analytics_routes import analytics_bp
 from services.order_service import OrderService
+from utils.logging_config import setup_logging
 
 
 def create_app():
     """Create and configure Flask application"""
 
+    # Configured here too (not just in main()) so app factory works standalone
+    # under WSGI servers like gunicorn that never call main().
+    setup_logging(Config.LOG_LEVEL, Config.LOG_DIR)
+
     app = Flask(__name__)
     app.config.from_object(Config)
     CORS(app)
+
+    log = logging.getLogger(__name__)
+    if not Config.MOCK_PRINTER and (not Config.FOOD_PRINTER_IP or not Config.DRINKS_PRINTER_IP):
+        log.warning(
+            "FOOD_PRINTER_IP and/or DRINKS_PRINTER_IP is not set — printing will stay "
+            "unavailable until configured (see .env.example)."
+        )
 
     # Single shared OrderService instance — one queue, one print thread
     app.order_service = OrderService()
@@ -67,12 +79,8 @@ def create_app():
 def main():
     """Main application entry point"""
 
+    setup_logging(Config.LOG_LEVEL, Config.LOG_DIR)
     log = logging.getLogger(__name__)
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-
     log.info("App started")
 
     app = create_app()

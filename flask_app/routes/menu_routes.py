@@ -1,10 +1,12 @@
 """
 Menu-related routes for the ordering system.
 """
+import logging
 from flask import Blueprint, jsonify, make_response
 from utils.file_utils import load_menu
 
 menu_bp = Blueprint('menu', __name__)
+log = logging.getLogger(__name__)
 
 @menu_bp.route("/menu", methods=["GET"])
 def get_menu():
@@ -19,7 +21,10 @@ def get_menu():
         description: Categorized JSON dictionary of menu items
     """
     menu = load_menu()
+    if not menu:
+        log.warning("Menu is empty or failed to load")
     response = make_response(jsonify(menu))
     response.headers["Content-Type"] = "application/json; charset=utf-8"
     return response
+
 

@@ -1,11 +1,14 @@
 """
 Printer management service for handling multiple printers.
 """
+import logging
 from services.Printer import Printer
 from services.MockPrinter import MockPrinter
 from config import Config
 
 from models import Order
+
+log = logging.getLogger(__name__)
 
 class PrinterService:
     """Service for managing food and drink printers"""
@@ -46,7 +49,7 @@ class PrinterService:
 
             return True
         except Exception as e:
-            print(f"Error printing order: {e}")
+            log.exception(f"Error printing order (order_id={getattr(order, 'id', None)})")
             return False
 
 

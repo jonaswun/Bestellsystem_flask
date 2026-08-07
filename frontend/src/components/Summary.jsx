@@ -14,8 +14,15 @@ function Summary() {
 
     const fetchSalesData = async () => {
         try {
-            const response = await axios.get('/api/orders/summary');
-            setSalesData(response.data);
+            const response = await axios.get('/api/analytics/sales');
+            // SUM/AVG/MIN/MAX come back as null when there are zero orders yet
+            setSalesData({
+                total_revenue: response.data.total_revenue ?? 0,
+                total_orders: response.data.total_orders ?? 0,
+                average_order_value: response.data.average_order_value ?? 0,
+                max_order_value: response.data.max_order_value ?? 0,
+                min_order_value: response.data.min_order_value ?? 0,
+            });
         } catch (err) {
             setError('Failed to fetch sales data');
             console.error('Error:', err);
