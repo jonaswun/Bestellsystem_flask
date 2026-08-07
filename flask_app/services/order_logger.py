@@ -29,6 +29,7 @@ class OrderLogger:
                     comment TEXT,
                     total_price REAL,
                     status TEXT DEFAULT 'pending',
+                    processed BOOLEAN DEFAULT FALSE,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -185,6 +186,18 @@ class OrderLogger:
             conn.commit()
             return cursor.rowcount > 0
 
+    def update_order_processed_status(self, order_id, processed=True):
+        """Update the processed status of an order"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE orders
+                SET processed = ?
+                WHERE id = ?
+            ''', (processed, order_id))
+            conn.commit()
+            return cursor.rowcount > 0
+
     def get_pending_orders(self):
         """Get all pending (unprinted) orders from DB with their items for recovery"""
         from models import Order
@@ -221,6 +234,7 @@ class OrderLogger:
                     'timestamp': order_dict.get('timestamp'),
                     'status': order_dict.get('status', 'pending'),
                     'created_at': order_dict.get('created_at'),
+                    'processed': order_dict.get('processed', False),
                     'orderedItems': items
                 })
                 pending_orders.append(order)
@@ -285,7 +299,7 @@ class OrderLogger:
             query = '''
                 SELECT
                     o.id, o.timestamp, o.table_number, o.user_agent,
-                    o.comment, o.total_price, o.status,
+                    o.comment, o.total_price, o.status, o.processed,
                     oi.item_name, oi.item_type, oi.price, oi.quantity
                 FROM orders o
                 LEFT JOIN order_items oi ON o.id = oi.order_id
@@ -309,7 +323,7 @@ class OrderLogger:
                 writer = csv.writer(csvfile)
                 writer.writerow([
                     'order_id', 'timestamp', 'table_number', 'user_agent',
-                    'comment', 'total_price', 'status',
+                    'comment', 'total_price', 'status', 'processed',
                     'item_name', 'item_type', 'item_price', 'quantity'
                 ])
 

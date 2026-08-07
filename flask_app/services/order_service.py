@@ -114,7 +114,7 @@ class OrderService:
             else:
                 # If it's already an Order object, validate it
                 order = order_data
-                
+
             if user_agent:
                 order.user_agent = user_agent
 
@@ -159,6 +159,7 @@ class OrderService:
             list: Filtered list of order dicts
         """
         orders_in_queue = list(self.dashboard_order_queue.queue)
+        self.log.info(f"Retrieved {len(orders_in_queue)} orders from dashboard queue for filtering.")
         filtered_orders = []
 
         for item in orders_in_queue:
