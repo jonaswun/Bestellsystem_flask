@@ -91,7 +91,7 @@ def get_orders():
         return jsonify({"error": str(e)}), 500
 
 @order_bp.route("/orders/dashboard/food", methods=["GET"])
-def get_dashboard_orders():
+def get_dashboard_orders_food():
     """Get orders for the dashboard"""
     try:
         log.debug("Fetching dashboard orders")
@@ -101,6 +101,36 @@ def get_dashboard_orders():
     except Exception as e:
         log.exception("Error fetching dashboard orders")
         return jsonify({"error": str(e)}), 500
+
+@order_bp.route("/orders/dashboard/drinks", methods=["GET"])
+def get_dashboard_orders_drinks():
+    """Get orders for the dashboard"""
+    try:
+        log.debug("Fetching dashboard orders")
+        # item type in order_items is recorded as 'drink' (singular)
+        filter = {"key": "type", "value": "drink"}
+        orders = current_app.order_service.get_dashboard_orders(filter)
+        return jsonify({"orders": orders})
+    except Exception as e:
+        log.exception("Error fetching dashboard orders")
+        return jsonify({"error": str(e)}), 500
+
+
+@order_bp.route("/orders/dashboard/set_processed", methods=["PUT"])
+def set_dashboard_orders_processed():
+    """ Set orders as processed for the dashboard"""
+    try:
+        log.debug(" Setting dashboard orders as processed")
+        data = request.json
+        order_id = data.get("order_id")
+
+        # item type in order_items is recorded as 'drink' (singular)
+        orders = current_app.order_service.set_order_processed(order_id)
+        return jsonify({"orders": orders})
+    except Exception as e:
+        log.exception("Error fetching dashboard orders")
+        return jsonify({"error": str(e)}), 500
+
 
 @order_bp.route("/orders/dashboard/complete", methods=["PUT"])
 def complete_dashboard_orders():

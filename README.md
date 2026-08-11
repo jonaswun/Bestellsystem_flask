@@ -44,11 +44,17 @@ The API is now available at **http://localhost:5000**.
 > **Tip:** To avoid needing a physical printer, set `MOCK_PRINTER = True` in
 > [`flask_app/config.py`](./flask_app/config.py) before starting.
 
+> **Printer IPs:** copy [`.env.example`](./.env.example) to `.env` at the repo
+> root and set `FOOD_PRINTER_IP` / `DRINKS_PRINTER_IP`. `.env` is gitignored
+> and loaded automatically (via `python-dotenv`) by both `python main.py` and
+> `docker compose up`. If either is left blank, the app still starts but logs
+> a startup warning and printing stays unavailable until configured.
+
 ---
 
 ### 2 — Frontend (React / Vite)
 
-The Vite dev server proxies API calls directly to your browser — it does **not** proxy to Flask automatically in dev mode. The frontend reads the API base URL from [`frontend/.env`](./frontend/.env):
+The Vite dev server proxies `/api/*` requests to your Flask backend (mirroring the nginx rule used in production). Copy [`frontend/.env.example`](./frontend/.env.example) to `frontend/.env` and point `VITE_BACKEND_HOST` at wherever Flask is running (defaults to `localhost:5000`):
 
 ```bash
 cd frontend
@@ -64,23 +70,24 @@ Make sure `frontend/.env` points to your running Flask instance:
 
 ```env
 # frontend/.env
-VITE_API_URL=http://localhost:5000
+VITE_BACKEND_HOST=localhost:5000
 ```
 
-> **Note:** In dev mode the frontend calls Flask directly (no nginx proxy).
-> In production (Docker) nginx routes `/api/*` to the backend container.
+> **Note:** In dev mode Vite proxies `/api/*` to `VITE_BACKEND_HOST`.
+> In production (Docker) nginx routes `/api/*` to the backend container instead — no IP needed there.
 
 ---
 
 ### 3 — Printer Configuration
 
-Edit [`flask_app/config.py`](./flask_app/config.py):
+Set these in the repo-root `.env` (see [`.env.example`](./.env.example)):
 
-```python
-MOCK_PRINTER    = False               # True = no real printer needed
-FOOD_PRINTER_IP = "192.168.88.250"    # IP of food printer
-DRINKS_PRINTER_IP = "192.168.88.248"  # IP of drinks/bar printer
+```env
+FOOD_PRINTER_IP=192.168.88.250      # IP of food printer
+DRINKS_PRINTER_IP=192.168.88.248   # IP of drinks/bar printer
 ```
+
+To avoid needing any real printer, set `MOCK_PRINTER = True` in [`flask_app/config.py`](./flask_app/config.py).
 
 ---
 

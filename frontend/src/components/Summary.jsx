@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Summary.css';
+import NavBar from './NavBar';
 
 function Summary() {
     const [salesData, setSalesData] = useState({
@@ -41,6 +42,7 @@ function Summary() {
 
     return (
         <div className="summary-container">
+            <NavBar />
             <h2>Verkauf Übersicht</h2>
             <div className="summary-grid">
                 <div className="summary-card">

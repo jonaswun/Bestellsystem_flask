@@ -160,13 +160,17 @@ class OrderService:
             list: Filtered list of order dicts
         """
         item_type = filter.get('value') if filter else None
-        orders = self.order_logger.get_active_orders(item_type)
+        orders = self.order_logger.get_unprocessed_orders(item_type)
         self.log.info(f"Retrieved {len(orders)} active order(s) from database for dashboard.")
         return [order.to_dict() for order in orders]
 
     def complete_order(self, order_id):
         """Mark an order as completed (persisted in the database)"""
         return self.order_logger.update_order_status(order_id, 'completed')
+    
+    def set_order_processed(self, order_id):
+        """Mark an order as processed (persisted in the database)"""
+        return self.order_logger.update_order_processed_status(order_id, True)
 
     def update_order_status(self, order_id, status):
         """Update the status of an order"""

@@ -180,7 +180,8 @@ function App() {
             <Routes>
                 <Route path="/" element={<MenuPage />} />
                 <Route path="/order-summary" element={<OrderSummary />} />
-                <Route path="/dashboard" element={<Dashboard />} />  {/* Add this route */}
+                <Route path="/dashboard/food" element={<Dashboard type="food" />} />
+                <Route path="/dashboard/drinks" element={<Dashboard type="drink" />} />
                 <Route path="/summary" element={<Summary />} />  {/* Add this route */}
             </Routes>
         </Router>

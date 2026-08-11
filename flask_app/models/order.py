@@ -68,6 +68,7 @@ class Order:
     timestamp: Optional[int] = None
     id: Optional[int] = None
     status: str = "pending"
+    processed: bool = False
     created_at: Optional[str] = None
     user_agent: Optional[str] = None
 
@@ -115,6 +116,7 @@ class Order:
             "totalCost": self.total_price,
             "total_price": self.total_price,
             "status": self.status,
+            "processed": self.processed,
             "created_at": self.created_at,
             "user_agent": self.user_agent,
         }
@@ -136,6 +138,7 @@ class Order:
             comment=data.get("comment", ""),
             timestamp=data.get("timestamp"),
             status=data.get("status", "pending"),
+            processed=data.get("processed", False),
             created_at=data.get("created_at"),
             user_agent=data.get("user_agent"),
         )

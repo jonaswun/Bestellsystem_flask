@@ -203,6 +203,31 @@ class OrderLogger:
             conn.commit()
             return cursor.rowcount > 0
 
+    def get_unprocessed_orders(self, item_type=None):
+        """Get all unprocessed orders"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if item_type:
+                cursor.execute('''
+                    SELECT * FROM orders
+                    WHERE processed = FALSE AND id IN (
+                        SELECT order_id FROM order_items WHERE item_type = ?
+                    )
+                    ORDER BY created_at ASC
+                ''', (item_type,))
+            else:
+                cursor.execute('''
+                    SELECT * FROM orders
+                    WHERE processed = FALSE
+                    ORDER BY created_at ASC
+                ''')
+            # sqlite3's cursor.rowcount is -1 for SELECT statements; fetch once
+            rows = cursor.fetchall()
+            count = len(rows)
+            print(f"Retrieved {count} unprocessed order(s) from database.")
+            # Return Order objects (with items) so callers can call .to_dict()
+            return [self._row_to_order(row, cursor) for row in rows]
+
     def _row_to_order(self, order_row, cursor):
         """Build an Order (with items) from an `orders` row using the given cursor"""
         from models import Order
@@ -227,6 +252,7 @@ class OrderLogger:
             'comment': order_dict.get('comment', ''),
             'timestamp': order_dict.get('timestamp'),
             'status': order_dict.get('status', 'pending'),
+            'processed': order_dict.get('processed', False),
             'created_at': order_dict.get('created_at'),
             'user_agent': order_dict.get('user_agent'),
             'orderedItems': items
