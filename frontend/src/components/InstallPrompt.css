@@ -1,0 +1,88 @@
+.install-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #062c55;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  max-width: 90vw;
+  width: 480px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -20px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.install-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.3;
+}
+
+.install-icon {
+  font-size: 18px;
+}
+
+.install-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.install-button {
+  padding: 6px 14px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s;
+}
+
+.install-button:hover {
+  background: #256528;
+}
+
+.install-dismiss {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.install-dismiss:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.share-icon {
+  display: inline-block;
+  font-size: 16px;
+  vertical-align: middle;
+}

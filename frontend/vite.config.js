@@ -15,8 +15,14 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         injectRegister: 'auto',
 
+        // Enable Service Worker in dev mode so the install prompt works
+        // without needing a production build first.
+        devOptions: {
+          enabled: true,
+          type: 'module',
+        },
+
         includeAssets: [
-          'vite.svg',
           'Logos_Rucksackberger_klein.jpg',
         ],
 
@@ -25,8 +31,8 @@ export default defineConfig(({ mode }) => {
           short_name: 'BestellApp',
           description: 'Bestellsystem Web App',
 
-          theme_color: '#1f2937',
-          background_color: '#ffffff',
+          theme_color: '#062c55',
+          background_color: '#062c55',
 
           display: 'standalone',
           orientation: 'portrait',
@@ -37,13 +43,14 @@ export default defineConfig(({ mode }) => {
           icons: [
             {
               src: 'Logos_Rucksackberger_klein.jpg',
-              sizes: '512x512',
+              sizes: '192x192',
               type: 'image/jpeg',
             },
             {
-              src: 'vite.svg',
-              sizes: '192x192',
-              type: 'image/svg+xml',
+              src: 'Logos_Rucksackberger_klein.jpg',
+              sizes: '512x512',
+              type: 'image/jpeg',
+              purpose: 'any maskable',
             },
           ],
         },

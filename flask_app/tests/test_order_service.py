@@ -50,7 +50,20 @@ def test_dashboard_shows_active_order(order_service_factory):
     assert order_id in [o["id"] for o in dashboard]
 
 
+def test_set_processed_removes_it_from_dashboard(order_service_factory):
+    """Marking the food portion processed must remove the order from the food dashboard."""
+    service = order_service_factory()
+    order_id = service.process_order(make_order())
+    wait_until(lambda: service.order_logger.get_order(order_id)["order"]["status"] == "printed")
+
+    service.set_order_processed(order_id, "food")
+    dashboard = service.get_dashboard_orders({"key": "type", "value": "food"})
+
+    assert order_id not in [o["id"] for o in dashboard]
+
+
 def test_complete_order_removes_it_from_dashboard(order_service_factory):
+    """complete_order sets status='completed' + both flags, so it must disappear from dashboard."""
     service = order_service_factory()
     order_id = service.process_order(make_order())
     wait_until(lambda: service.order_logger.get_order(order_id)["order"]["status"] == "printed")

@@ -168,9 +168,9 @@ class OrderService:
         """Mark an order as completed (persisted in the database)"""
         return self.order_logger.update_order_status(order_id, 'completed')
     
-    def set_order_processed(self, order_id):
-        """Mark an order as processed (persisted in the database)"""
-        return self.order_logger.update_order_processed_status(order_id, True)
+    def set_order_processed(self, order_id, item_type):
+        """Mark the food or drink portion of an order as processed (persisted in the database)"""
+        return self.order_logger.update_type_processed_status(order_id, item_type)
 
     def update_order_status(self, order_id, status):
         """Update the status of an order"""

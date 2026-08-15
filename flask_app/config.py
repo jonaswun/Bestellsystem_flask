@@ -35,7 +35,6 @@ class Config:
     CSV_FALLBACK_PATH = str(BASE_DIR / "data.csv")
 
     # Order processing settings
-    ORDER_QUEUE_TIMEOUT = 1.0
     DEFAULT_ORDER_LIMIT = 50
 
     @classmethod

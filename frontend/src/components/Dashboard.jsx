@@ -12,9 +12,10 @@ function Dashboard({ type = 'food' }) {
             // Backend endpoints use 'food' and 'drinks' (plural for drinks)
             const endpointType = type === 'drink' ? 'drinks' : type;
             const response = await axios.get(`/api/orders/dashboard/${endpointType}`);
-            // Ensure orders exist and filter out completed ones
+            // Filter already happens server-side; keep only what matches this dashboard's type
+            const processedKey = type === 'drink' ? 'drink_processed' : 'food_processed';
             const validOrders = response.data.orders?.filter(order =>
-                order && order.processed === 0
+                order && !order[processedKey]
             ) || [];
 
             setOrders(validOrders.map(o => ({ ...o, completing: false })));
@@ -29,7 +30,7 @@ function Dashboard({ type = 'food' }) {
             // Optimistically mark as completing
             setOrders(prev => prev.map(o => o.id === order_id ? { ...o, completing: true } : o));
 
-            const response = await axios.put('/api/orders/dashboard/set_processed', { order_id });
+            await axios.put('/api/orders/dashboard/set_processed', { order_id, item_type: type });
             // show green check briefly then remove
             setOrders(prev => prev.map(o => o.id === order_id ? { ...o, completed: true, completing: false } : o));
             setTimeout(() => {

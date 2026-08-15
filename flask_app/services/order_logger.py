@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 from contextlib import contextmanager
 from pathlib import Path
 from config import Config
-
+import logging
 
 class OrderLogger:
     """SQLite-based order logging system"""
 
     def __init__(self, db_path=None):
         self.db_path = db_path or Config.DATABASE_PATH
+        self.log = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self.init_database()
 
 
@@ -29,10 +30,21 @@ class OrderLogger:
                     comment TEXT,
                     total_price REAL,
                     status TEXT DEFAULT 'pending',
-                    processed BOOLEAN DEFAULT FALSE,
+                    food_processed BOOLEAN DEFAULT FALSE,
+                    drink_processed BOOLEAN DEFAULT FALSE,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+
+            # Migration: add new columns to existing databases that still use the
+            # old single `processed` column (or are missing the new ones entirely).
+            for col in ('food_processed', 'drink_processed'):
+                try:
+                    cursor.execute(
+                        f'ALTER TABLE orders ADD COLUMN {col} BOOLEAN DEFAULT FALSE'
+                    )
+                except Exception:
+                    pass  # column already exists – that's fine
 
             # Create order_items table
             cursor.execute('''
@@ -95,16 +107,26 @@ class OrderLogger:
         with self.get_connection() as conn:
             cursor = conn.cursor()
 
+            # Determine which item types are present in this order so we can
+            # pre-set the non-relevant processed flag to TRUE right away.
+            item_types = {item.type for item in order.items}
+            food_processed = 0 if 'food' in item_types else 1
+            drink_processed = 0 if 'drink' in item_types else 1
+
             # Insert order
             cursor.execute('''
-                INSERT INTO orders (timestamp, table_number, user_agent, comment, total_price)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO orders
+                    (timestamp, table_number, user_agent, comment, total_price,
+                     food_processed, drink_processed)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 timestamp,
                 order.table_number,
                 user_agent or order.user_agent,
                 order.comment,
-                order.total_price
+                order.total_price,
+                food_processed,
+                drink_processed,
             ))
 
             order_id = cursor.lastrowid
@@ -180,52 +202,86 @@ class OrderLogger:
             return [dict(row) for row in cursor.fetchall()]
 
     def update_order_status(self, order_id, status):
-        """Update the status of an order"""
+        """Update the status of an order.
+        When status is 'completed', both processed flags are also set so the
+        order disappears from the kitchen/bar dashboards immediately.
+        """
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                UPDATE orders
-                SET status = ?
-                WHERE id = ?
-            ''', (status, order_id))
+            if status == 'completed':
+                cursor.execute('''
+                    UPDATE orders
+                    SET status = ?, food_processed = TRUE, drink_processed = TRUE
+                    WHERE id = ?
+                ''', (status, order_id))
+            else:
+                cursor.execute(
+                    'UPDATE orders SET status = ? WHERE id = ?',
+                    (status, order_id)
+                )
             conn.commit()
             return cursor.rowcount > 0
 
-    def update_order_processed_status(self, order_id, processed=True):
-        """Update the processed status of an order"""
+    def update_type_processed_status(self, order_id, item_type, processed=True):
+        """
+        Mark the food or drink portion of an order as processed.
+
+        Args:
+            order_id (int): The order to update.
+            item_type (str): 'food' or 'drink'.
+            processed (bool): New processed state (default True).
+        Returns:
+            bool: True if a row was updated.
+        """
+        if item_type not in ('food', 'drink'):
+            raise ValueError(f"item_type must be 'food' or 'drink', got {item_type!r}")
+        col = 'food_processed' if item_type == 'food' else 'drink_processed'
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                UPDATE orders
-                SET processed = ?
-                WHERE id = ?
-            ''', (processed, order_id))
+            cursor.execute(
+                f'UPDATE orders SET {col} = ? WHERE id = ?',
+                (processed, order_id)
+            )
             conn.commit()
             return cursor.rowcount > 0
 
     def get_unprocessed_orders(self, item_type=None):
-        """Get all unprocessed orders"""
+        """Get all orders that still have an unprocessed portion.
+
+        Args:
+            item_type (str|None): 'food', 'drink', or None for both.
+        """
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            if item_type:
+            if item_type == 'food':
                 cursor.execute('''
-                    SELECT * FROM orders
-                    WHERE processed = FALSE AND id IN (
-                        SELECT order_id FROM order_items WHERE item_type = ?
-                    )
-                    ORDER BY created_at ASC
-                ''', (item_type,))
+                    SELECT DISTINCT o.*
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    WHERE o.food_processed = FALSE
+                      AND o.status != 'completed'
+                      AND oi.item_type = 'food'
+                    ORDER BY o.created_at ASC
+                ''')
+            elif item_type == 'drink':
+                cursor.execute('''
+                    SELECT DISTINCT o.*
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    WHERE o.drink_processed = FALSE
+                      AND o.status != 'completed'
+                      AND oi.item_type = 'drink'
+                    ORDER BY o.created_at ASC
+                ''')
             else:
                 cursor.execute('''
                     SELECT * FROM orders
-                    WHERE processed = FALSE
+                    WHERE (food_processed = FALSE OR drink_processed = FALSE)
+                      AND status != 'completed'
                     ORDER BY created_at ASC
                 ''')
-            # sqlite3's cursor.rowcount is -1 for SELECT statements; fetch once
             rows = cursor.fetchall()
-            count = len(rows)
-            print(f"Retrieved {count} unprocessed order(s) from database.")
-            # Return Order objects (with items) so callers can call .to_dict()
+            self.log.info(f"Retrieved {len(rows)} unprocessed order(s) from database.")
             return [self._row_to_order(row, cursor) for row in rows]
 
     def _row_to_order(self, order_row, cursor):
@@ -252,7 +308,8 @@ class OrderLogger:
             'comment': order_dict.get('comment', ''),
             'timestamp': order_dict.get('timestamp'),
             'status': order_dict.get('status', 'pending'),
-            'processed': order_dict.get('processed', False),
+            'food_processed': order_dict.get('food_processed', False),
+            'drink_processed': order_dict.get('drink_processed', False),
             'created_at': order_dict.get('created_at'),
             'user_agent': order_dict.get('user_agent'),
             'orderedItems': items
@@ -267,35 +324,6 @@ class OrderLogger:
                 WHERE status = 'pending'
                 ORDER BY id ASC
             ''')
-            rows = cursor.fetchall()
-            return [self._row_to_order(row, cursor) for row in rows]
-
-    def get_active_orders(self, item_type=None):
-        """
-        Get all non-completed orders (with items) for dashboard/kitchen display.
-        This is the single source of truth for "what's still open" — no in-memory
-        state is kept, so this reflects every worker process consistently.
-
-        Args:
-            item_type (str): Optional item type ('food'/'drink') an order must
-                contain at least one of; the full order (all items) is still returned.
-        """
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            if item_type:
-                cursor.execute('''
-                    SELECT DISTINCT o.*
-                    FROM orders o
-                    JOIN order_items oi ON o.id = oi.order_id
-                    WHERE o.status != 'completed' AND oi.item_type = ?
-                    ORDER BY o.created_at ASC
-                ''', (item_type,))
-            else:
-                cursor.execute('''
-                    SELECT * FROM orders
-                    WHERE status != 'completed'
-                    ORDER BY created_at ASC
-                ''')
             rows = cursor.fetchall()
             return [self._row_to_order(row, cursor) for row in rows]
 
@@ -357,7 +385,8 @@ class OrderLogger:
             query = '''
                 SELECT
                     o.id, o.timestamp, o.table_number, o.user_agent,
-                    o.comment, o.total_price, o.status, o.processed,
+                    o.comment, o.total_price, o.status,
+                    o.food_processed, o.drink_processed,
                     oi.item_name, oi.item_type, oi.price, oi.quantity
                 FROM orders o
                 LEFT JOIN order_items oi ON o.id = oi.order_id
@@ -381,7 +410,8 @@ class OrderLogger:
                 writer = csv.writer(csvfile)
                 writer.writerow([
                     'order_id', 'timestamp', 'table_number', 'user_agent',
-                    'comment', 'total_price', 'status', 'processed',
+                    'comment', 'total_price', 'status',
+                    'food_processed', 'drink_processed',
                     'item_name', 'item_type', 'item_price', 'quantity'
                 ])
 

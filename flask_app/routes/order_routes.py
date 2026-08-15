@@ -118,80 +118,26 @@ def get_dashboard_orders_drinks():
 
 @order_bp.route("/orders/dashboard/set_processed", methods=["PUT"])
 def set_dashboard_orders_processed():
-    """ Set orders as processed for the dashboard"""
+    """ Set the food or drink portion of an order as processed for the dashboard"""
     try:
-        log.debug(" Setting dashboard orders as processed")
+        log.debug("Setting dashboard order as processed")
         data = request.json
         order_id = data.get("order_id")
+        item_type = data.get("item_type")
 
-        # item type in order_items is recorded as 'drink' (singular)
-        orders = current_app.order_service.set_order_processed(order_id)
-        return jsonify({"orders": orders})
+        if not order_id:
+            return jsonify({"error": "order_id is required"}), 400
+        if item_type not in ("food", "drink"):
+            return jsonify({"error": "item_type must be 'food' or 'drink'"}), 400
+
+        result = current_app.order_service.set_order_processed(order_id, item_type)
+        return jsonify({"success": result})
     except Exception as e:
-        log.exception("Error fetching dashboard orders")
+        log.exception("Error setting order as processed")
         return jsonify({"error": str(e)}), 500
 
 
-@order_bp.route("/orders/dashboard/complete", methods=["PUT"])
-def complete_dashboard_orders():
-    """
-    Complete a dashboard order
-    ---
-    tags:
-      - Orders
-    summary: Mark an order as completed (persisted in the database)
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - order_id
-          properties:
-            order_id:
-              type: integer
-              example: 42
-    responses:
-      200:
-        description: Order marked as completed
-      400:
-        description: Missing order_id
-      404:
-        description: Order not found
-      500:
-        description: Server error
-    """
-    try:
-        # Validate request body exists
-        if not request.is_json:
-            return jsonify({"error": "Request must be JSON"}), 400
 
-        # Get and validate order_id
-        data = request.json
-        order_id = data.get("order_id")
-        if order_id is None:
-            return jsonify({"error": "order_id is required"}), 400
-
-        log.info(f"Attempting to complete order {order_id}")
-
-        success = current_app.order_service.complete_order(order_id)
-        if not success:
-            return jsonify({"success": False, "error": "Order not found"}), 404
-
-        # Return success response
-        return jsonify({
-            "success": True,
-            "message": f"Order {order_id} completed successfully",
-            "order_id": order_id
-        })
-
-    except Exception as e:
-        log.exception("Error completing order")
-        return jsonify({
-            "success": False,
-            "error": f"Failed to complete order: {str(e)}"
-        }), 500
 
 @order_bp.route("/orders/<int:order_id>", methods=["GET"])
 def get_order_details(order_id):

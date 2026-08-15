@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from
 import OrderSummary from "./OrderSummary";
 import Dashboard from "./components/Dashboard";
 import Summary from "./components/Summary";
+import InstallPrompt from "./components/InstallPrompt";
+import FullscreenToggle from "./components/FullscreenToggle";
 
 function findItemById(menu, id) {
     for (const category of Object.keys(menu)) { // Iterate over "food" and "drinks"
@@ -92,21 +94,24 @@ function MenuPage() {
 
     return (
         <div>
-            <div className="category-buttons">
-                {Object.keys(menu).map((category) => (
-                    <button
-                        key={category}
-                        onClick={() => setSelectedCategory(category)}
-                        style={{
-                            fontWeight: selectedCategory === category ? "bold" : "normal",
-                            backgroundColor: selectedCategory === category ? "#062c55ff" : "#2157a5",
-                            color: "white",
-                            fontSize: "14px",
-                        }}
-                    >
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </button>
-                ))}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <div className="category-buttons" style={{ flex: 1 }}>
+                    {Object.keys(menu).map((category) => (
+                        <button
+                            key={category}
+                            onClick={() => setSelectedCategory(category)}
+                            style={{
+                                fontWeight: selectedCategory === category ? "bold" : "normal",
+                                backgroundColor: selectedCategory === category ? "#062c55ff" : "#2157a5",
+                                color: "white",
+                                fontSize: "14px",
+                            }}
+                        >
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </button>
+                    ))}
+                </div>
+                <FullscreenToggle />
             </div>
 
             <div>
@@ -177,12 +182,13 @@ function MenuPage() {
 function App() {
     return (
         <Router>
+            <InstallPrompt />
             <Routes>
                 <Route path="/" element={<MenuPage />} />
                 <Route path="/order-summary" element={<OrderSummary />} />
                 <Route path="/dashboard/food" element={<Dashboard type="food" />} />
                 <Route path="/dashboard/drinks" element={<Dashboard type="drink" />} />
-                <Route path="/summary" element={<Summary />} />  {/* Add this route */}
+                <Route path="/summary" element={<Summary />} />
             </Routes>
         </Router>
     );

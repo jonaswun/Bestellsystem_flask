@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import './NavBar.css';
-import InstallPrompt from './InstallPrompt';
+import FullscreenToggle from './FullscreenToggle';
 
 export default function NavBar() {
     return (
@@ -11,7 +11,7 @@ export default function NavBar() {
                 <Link to="/dashboard/drinks" className="nav-link">Getränke</Link>
                 <Link to="/summary" className="nav-link">Summary</Link>
             </div>
-            <InstallPrompt />
+            <FullscreenToggle />
         </nav>
     );
 }
